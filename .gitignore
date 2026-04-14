@@ -1,0 +1,87 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# Dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# Package managers
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Testing
+/coverage
+.nyc_output
+
+# Next.js
+/.next/
+/out/
+
+# Production
+/build
+/dist
+
+# Firebase
+.firebase/
+.firebaserc
+serviceAccountKey.json
+*-service-account.json
+
+# Firebase Emulator Suite data (NO comitear datos locales de emuladores)
+/firebase-export-*/
+*.log
+firestore-debug.log*
+firebase-debug.log*
+ui-debug.log*
+pubsub-debug.log*
+/functions/lib/
+/functions/node_modules/
+
+# Environment variables (nunca comitear credenciales reales)
+.env
+.env.local
+.env.*.local
+!.env.local.example
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+lerna-debug.log*
+
+# IDEs / Editors
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Misc
+*.pem
+.eslintcache
+.prettiercache
+*.tsbuildinfo
+next-env.d.ts
+
+# Vercel
+.vercel
+
+# Turborepo / Monorepo tools
+.turbo
+.env.local.example
