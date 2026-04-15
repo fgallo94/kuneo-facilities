@@ -1,0 +1,19 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.role == 'admin';
+    }
+
+    // Ruta: incidences/{incidenceId}/{userId}/...
+    // Solo el propietario (o un admin) puede escribir en su carpeta.
+    match /incidences/{incidenceId}/{userId}/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin() || (isAuthenticated() && request.auth.uid == userId);
+    }
+  }
+}

@@ -90,4 +90,6 @@ Cuando te solicite una nueva funcionalidad:
 3. Proporciona el código modularizado.
 4. Proporciona los tests de la nueva funcionalidad.
 
+Utiliza Context7 para realizar busquedas en documentacion oficial de las tecnologias propuestas.
+
 ¿Entendido? Responde "Sistema Kuneo Inicializado. ¿Qué funcionalidad vamos a construir hoy?" si has comprendido estas reglas.
