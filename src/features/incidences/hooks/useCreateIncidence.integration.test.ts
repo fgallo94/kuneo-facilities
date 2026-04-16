@@ -1,24 +1,14 @@
 /**
  * Test de integración para useCreateIncidence contra Firebase Emulator Suite.
- *
- * Requisitos previos:
- * 1. Tener instalado firebase-tools: npm install -g firebase-tools
- * 2. Iniciar emuladores: npx firebase emulators:start --project demo-project
- * 3. Ejecutar el test: npm run test:integration
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { initializeApp, deleteApp, getApps } from 'firebase/app';
 import {
-  getAuth,
-  connectAuthEmulator,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
 } from 'firebase/auth';
 import {
-  getFirestore,
-  connectFirestoreEmulator,
   collection,
   doc,
   setDoc,
@@ -26,83 +16,15 @@ import {
   where,
   getDocs,
 } from 'firebase/firestore';
-
-// Env vars para que @/lib/firebase se conecte a los emuladores
-const AUTH_EMULATOR_URL = 'http://127.0.0.1:9091';
-const FIRESTORE_EMULATOR_HOST = '127.0.0.1:8081';
-
-process.env.NEXT_PUBLIC_FIREBASE_API_KEY = 'demo-api-key';
-process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN = 'demo-project.firebaseapp.com';
-process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID = 'demo-project';
-process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET = 'demo-project.appspot.com';
-process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID = '123456';
-process.env.NEXT_PUBLIC_FIREBASE_APP_ID = '1:123456:web:abc123';
-process.env.NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_URL = AUTH_EMULATOR_URL;
-process.env.NEXT_PUBLIC_FIREBASE_FIRESTORE_EMULATOR_HOST = FIRESTORE_EMULATOR_HOST;
-
-let appCounter = 0;
-
-async function cleanupFirebaseApps() {
-  await Promise.all(getApps().map((app) => deleteApp(app)));
-}
-
-function getTestApp() {
-  return initializeApp(
-    {
-      apiKey: 'demo-api-key',
-      authDomain: 'demo-project.firebaseapp.com',
-      projectId: 'demo-project',
-    },
-    `integration-test-app-${appCounter++}`
-  );
-}
-
-function getTestEmulatorAuth() {
-  const authInstance = getAuth(getTestApp());
-  connectAuthEmulator(authInstance, AUTH_EMULATOR_URL, { disableWarnings: true });
-  return authInstance;
-}
-
-function getTestEmulatorDb() {
-  const db = getFirestore(getTestApp());
-  connectFirestoreEmulator(db, '127.0.0.1', 8081);
-  return db;
-}
-
-async function clearAuthEmulator() {
-  try {
-    await fetch('http://127.0.0.1:9091/emulator/v1/projects/demo-project/accounts', {
-      method: 'DELETE',
-    });
-  } catch {
-    // Ignorar si no está corriendo
-  }
-}
-
-async function clearFirestoreEmulator() {
-  try {
-    await fetch(
-      'http://127.0.0.1:8081/emulator/v1/projects/demo-project/databases/(default)/documents',
-      { method: 'DELETE' }
-    );
-  } catch {
-    // Ignorar
-  }
-}
-
-async function setCustomClaims(uid: string, claims: Record<string, unknown>) {
-  await fetch(
-    'http://127.0.0.1:9091/identitytoolkit.googleapis.com/v1/projects/demo-project/accounts:update',
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        localId: uid,
-        customAttributes: JSON.stringify(claims),
-      }),
-    }
-  );
-}
+import {
+  cleanupFirebaseApps,
+  clearAuthEmulator,
+  clearFirestoreEmulator,
+  getTestApp,
+  getTestEmulatorAuth,
+  getTestEmulatorDb,
+  setCustomClaims,
+} from '@/lib/firebaseEmulatorTestHelpers';
 
 describe('useCreateIncidence Integration (Emulator)', () => {
   beforeEach(async () => {
@@ -119,8 +41,10 @@ describe('useCreateIncidence Integration (Emulator)', () => {
   });
 
   it('crea una incidencia con fotos y genera el history', async () => {
-    const adminAuth = getTestEmulatorAuth();
-    const adminDb = getTestEmulatorDb();
+    // Usar una sola app para setup de auth y db
+    const setupApp = getTestApp();
+    const adminAuth = getTestEmulatorAuth(setupApp);
+    const adminDb = getTestEmulatorDb(setupApp);
 
     // 1. Crear admin y setear custom claim
     const adminCredential = await createUserWithEmailAndPassword(
@@ -144,8 +68,8 @@ describe('useCreateIncidence Integration (Emulator)', () => {
     });
 
     // 3. Crear usuario normal
-    const testAuth = getTestEmulatorAuth();
-    await createUserWithEmailAndPassword(testAuth, 'user@kuneo.app', 'TestPass123!');
+    const userAuth = getTestEmulatorAuth();
+    await createUserWithEmailAndPassword(userAuth, 'user@kuneo.app', 'TestPass123!');
 
     // 4. Importar hook para que @/lib/firebase use los emuladores
     const { useCreateIncidence } = await import('./useCreateIncidence');

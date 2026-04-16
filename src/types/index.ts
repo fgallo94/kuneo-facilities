@@ -4,7 +4,8 @@ export interface User {
   uid: string;
   email: string | null;
   displayName: string | null;
-  role: 'admin' | 'apoderado' | 'operario' | 'user';
+  role: 'admin' | 'user';
+  assignedEntities?: string[];
 }
 
 export interface LoginFormData {
@@ -29,19 +30,40 @@ export const URGENCY_LEVELS = ['normal', 'high', 'urgent'] as const;
 
 export type UrgencyLevel = (typeof URGENCY_LEVELS)[number];
 
+export interface Group {
+  id: string;
+  name: string;
+  isActive: boolean;
+  address?: string;
+  description?: string;
+  imageUrl?: string;
+  assignedUserIds?: string[];
+  createdAt?: Timestamp;
+}
+
 export interface Installation {
   id: string;
   groupId: string;
   name: string;
+  address?: string;
+  description?: string;
+  imageUrl?: string;
   ownerDetails?: { name: string; nif?: string };
   exploiterDetails?: { name: string; nif?: string };
+  assignedUserIds?: string[];
+  createdAt?: Timestamp;
 }
 
 export interface Property {
   id: string;
   installationId: string;
   name: string;
+  address?: string;
+  description?: string;
+  imageUrl?: string;
   type?: string;
+  assignedUserIds?: string[];
+  createdAt?: Timestamp;
 }
 
 export interface Incidence {

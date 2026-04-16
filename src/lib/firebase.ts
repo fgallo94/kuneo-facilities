@@ -2,6 +2,7 @@ import { initializeApp, getApps, type FirebaseApp } from 'firebase/app';
 import { getAuth, connectAuthEmulator, type Auth } from 'firebase/auth';
 import { getFirestore, connectFirestoreEmulator, type Firestore } from 'firebase/firestore';
 import { getStorage, connectStorageEmulator, type FirebaseStorage } from 'firebase/storage';
+import { getFunctions, connectFunctionsEmulator, type Functions } from 'firebase/functions';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -24,6 +25,7 @@ let app: FirebaseApp | undefined;
 let auth: Auth | undefined;
 let db: Firestore | undefined;
 let storage: FirebaseStorage | undefined;
+let functionsInstance: Functions | undefined;
 
 if (typeof window !== 'undefined') {
   const existingDefaultApp = getApps().find((a) => a.name === '[DEFAULT]');
@@ -31,35 +33,51 @@ if (typeof window !== 'undefined') {
   auth = getAuth(app);
   db = getFirestore(app);
   storage = getStorage(app);
+  functionsInstance = getFunctions(app);
 
-  const authEmulatorUrl = process.env.NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_URL;
-  if (authEmulatorUrl) {
-    try {
-      connectAuthEmulator(auth, authEmulatorUrl);
-    } catch {
-      // Ya conectado al emulador
+  const useEmulator = process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === 'true';
+
+  if (useEmulator) {
+    const authEmulatorUrl = process.env.NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_URL;
+    if (authEmulatorUrl) {
+      try {
+        connectAuthEmulator(auth, authEmulatorUrl);
+      } catch {
+        // Ya conectado al emulador
+      }
     }
-  }
 
-  const firestoreEmulator = parseHostPort(
-    process.env.NEXT_PUBLIC_FIREBASE_FIRESTORE_EMULATOR_HOST
-  );
-  if (firestoreEmulator && db) {
-    try {
-      connectFirestoreEmulator(db, firestoreEmulator.host, firestoreEmulator.port);
-    } catch {
-      // Ya conectado
+    const firestoreEmulator = parseHostPort(
+      process.env.NEXT_PUBLIC_FIREBASE_FIRESTORE_EMULATOR_HOST
+    );
+    if (firestoreEmulator && db) {
+      try {
+        connectFirestoreEmulator(db, firestoreEmulator.host, firestoreEmulator.port);
+      } catch {
+        // Ya conectado
+      }
     }
-  }
 
-  const storageEmulator = parseHostPort(
-    process.env.NEXT_PUBLIC_FIREBASE_STORAGE_EMULATOR_HOST
-  );
-  if (storageEmulator && storage) {
-    try {
-      connectStorageEmulator(storage, storageEmulator.host, storageEmulator.port);
-    } catch {
-      // Ya conectado
+    const storageEmulator = parseHostPort(
+      process.env.NEXT_PUBLIC_FIREBASE_STORAGE_EMULATOR_HOST
+    );
+    if (storageEmulator && storage) {
+      try {
+        connectStorageEmulator(storage, storageEmulator.host, storageEmulator.port);
+      } catch {
+        // Ya conectado
+      }
+    }
+
+    const functionsEmulator = parseHostPort(
+      process.env.NEXT_PUBLIC_FIREBASE_FUNCTIONS_EMULATOR_HOST
+    );
+    if (functionsEmulator && functionsInstance) {
+      try {
+        connectFunctionsEmulator(functionsInstance, functionsEmulator.host, functionsEmulator.port);
+      } catch {
+        // Ya conectado
+      }
     }
   }
 }
@@ -85,6 +103,13 @@ export function getClientStorage(): FirebaseStorage {
   return storage;
 }
 
+export function getClientFunctions(): Functions {
+  if (!functionsInstance) {
+    throw new Error('Firebase Functions no está disponible en el servidor');
+  }
+  return functionsInstance;
+}
+
 /** Utilidad exclusiva para tests de integración contra el emulador. */
 export function createEmulatorAuth(): Auth {
   const emulatorApp = initializeApp(firebaseConfig, 'emulator-app');
@@ -94,4 +119,4 @@ export function createEmulatorAuth(): Auth {
   return emulatorAuth;
 }
 
-export { auth, db, storage };
+export { auth, db, storage, functionsInstance as functions };

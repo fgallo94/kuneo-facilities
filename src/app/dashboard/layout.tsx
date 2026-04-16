@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard,
   FileText,
+  Shield,
   LogOut,
   Menu,
   X,
@@ -13,10 +14,12 @@ import {
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 
-const navItems = [
+const baseNavItems = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Incidencias', href: '/dashboard/incidences/new', icon: FileText },
 ];
+
+const adminNavItem = { label: 'Admin', href: '/dashboard/admin', icon: Shield };
 
 export default function DashboardLayout({
   children,
@@ -29,11 +32,21 @@ export default function DashboardLayout({
   const isDesktop = useMediaQuery('(min-width: 768px)');
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
+  const isAdmin = user?.role === 'admin';
+  const navItems = React.useMemo(
+    () => (isAdmin ? [...baseNavItems, adminNavItem] : baseNavItems),
+    [isAdmin]
+  );
+
   React.useEffect(() => {
     if (!loading && !user) {
       router.replace('/login');
+      return;
     }
-  }, [loading, user, router]);
+    if (!loading && pathname.startsWith('/dashboard/admin') && !isAdmin) {
+      router.replace('/dashboard');
+    }
+  }, [loading, user, isAdmin, pathname, router]);
 
   if (loading || !user) {
     return (
