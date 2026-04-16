@@ -8,10 +8,15 @@ import {
   browserSessionPersistence,
   type User as FirebaseUser,
 } from 'firebase/auth';
-import { getClientAuth } from '@/lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import { getClientAuth, getClientFirestore } from '@/lib/firebase';
+
+export interface AuthUser extends FirebaseUser {
+  role?: 'admin' | 'user';
+}
 
 interface UseAuthReturn {
-  user: FirebaseUser | null;
+  user: AuthUser | null;
   loading: boolean;
   error: string | null;
   login: (email: string, password: string, remember?: boolean) => Promise<void>;
@@ -20,14 +25,30 @@ interface UseAuthReturn {
 }
 
 export function useAuth(): UseAuthReturn {
-  const [user, setUser] = useState<FirebaseUser | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(getClientAuth(), (firebaseUser) => {
-      setUser(firebaseUser);
-      setLoading(false);
+    const unsubscribe = onAuthStateChanged(getClientAuth(), async (firebaseUser) => {
+      if (!firebaseUser) {
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+      try {
+        const snap = await getDoc(doc(getClientFirestore(), 'users', firebaseUser.uid));
+        const data = snap.exists() ? snap.data() : null;
+        const authUser = firebaseUser as AuthUser;
+        if (data?.role === 'admin' || data?.role === 'user') {
+          authUser.role = data.role;
+        }
+        setUser(authUser);
+      } catch {
+        setUser(firebaseUser as AuthUser);
+      } finally {
+        setLoading(false);
+      }
     });
 
     return () => unsubscribe();
