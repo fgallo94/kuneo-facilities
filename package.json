@@ -17,11 +17,15 @@
     "ci": "node scripts/ci.js"
   },
   "dependencies": {
+    "@hello-pangea/dnd": "^18.0.1",
     "@hookform/resolvers": "^5.2.2",
+    "@opentelemetry/api": "^1.9.1",
+    "chart.js": "^4.5.1",
     "firebase": "^12.12.0",
     "lucide-react": "^1.8.0",
     "next": "16.2.3",
     "react": "19.2.4",
+    "react-chartjs-2": "^5.3.1",
     "react-dom": "19.2.4",
     "react-hook-form": "^7.72.1",
     "zod": "^4.3.6"

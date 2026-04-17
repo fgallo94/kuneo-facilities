@@ -48,6 +48,42 @@ describe('IncidenceReportForm', () => {
     expect(screen.getByText(/guía de reporte/i)).toBeInTheDocument();
   });
 
+  it('shows "No hay incidencias abiertas" when there are no open incidences', () => {
+    render(<IncidenceReportForm onSubmit={onSubmit} openIncidences={[]} />);
+    expect(screen.getByText('No hay incidencias abiertas')).toBeInTheDocument();
+  });
+
+  it('shows loading text while open incidences are loading', () => {
+    render(
+      <IncidenceReportForm onSubmit={onSubmit} openIncidencesLoading={true} />
+    );
+    expect(screen.getByText('Cargando...')).toBeInTheDocument();
+  });
+
+  it('renders open incidences list in the sidebar', () => {
+    const incidences = [
+      {
+        id: 'inc_1',
+        title: 'Fuga en baño',
+        status: 'Reportada',
+        createdAt: { seconds: Date.now() / 1000 - 86400, nanoseconds: 0 },
+      },
+      {
+        id: 'inc_2',
+        title: 'Luz parpadeante',
+        status: 'En reparación',
+        createdAt: { seconds: Date.now() / 1000 - 3600, nanoseconds: 0 },
+      },
+    ] as import('@/types').Incidence[];
+
+    render(<IncidenceReportForm onSubmit={onSubmit} openIncidences={incidences} />);
+
+    expect(screen.getByText('Fuga en baño')).toBeInTheDocument();
+    expect(screen.getByText('Reportada • hace 1 día')).toBeInTheDocument();
+    expect(screen.getByText('Luz parpadeante')).toBeInTheDocument();
+    expect(screen.getByText(/En reparación • hace/i)).toBeInTheDocument();
+  });
+
   it('shows validation errors when submitting empty form', async () => {
     render(<IncidenceReportForm onSubmit={onSubmit} />);
 

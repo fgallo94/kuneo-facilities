@@ -53,6 +53,7 @@ describe('useCreateIncidence Integration (Emulator)', () => {
       'AdminPass123!'
     );
     await setCustomClaims(adminCredential.user.uid, { role: 'admin' });
+    await signInWithEmailAndPassword(adminAuth, 'admin@kuneo.app', 'AdminPass123!');
 
     // 2. Seed installation y property como admin
     const installationId = 'inst_test_01';
@@ -112,7 +113,7 @@ describe('useCreateIncidence Integration (Emulator)', () => {
     expect(incidenceData.propertyId).toBe(propertyId);
     expect(incidenceData.installationId).toBe(installationId);
     expect(incidenceData.reportedBy).toBe(clientAuth.currentUser!.uid);
-    expect(incidenceData.status).toBe('Backlog');
+    expect(incidenceData.status).toBe('Reportada');
     expect(incidenceData.severity).toBe(3);
     expect(incidenceData.billTo).toBe('Propietario');
     expect(incidenceData.imageUrls).toEqual([]);
@@ -123,7 +124,8 @@ describe('useCreateIncidence Integration (Emulator)', () => {
     );
     expect(historySnap.docs.length).toBe(1);
     const historyData = historySnap.docs[0].data();
-    expect(historyData.newStatus).toBe('Backlog');
+    expect(historyData.newStatus).toBe('Reportada');
+    expect(historyData.changeType).toBe('status');
     expect(historyData.changedBy).toBe(clientAuth.currentUser!.uid);
   });
 

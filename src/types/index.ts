@@ -30,6 +30,18 @@ export const URGENCY_LEVELS = ['normal', 'high', 'urgent'] as const;
 
 export type UrgencyLevel = (typeof URGENCY_LEVELS)[number];
 
+export const INCIDENCE_STATUSES = [
+  'Reportada',
+  'En reparación',
+  'Reparado',
+  'A falta de presupuesto',
+  'Presupuestado',
+  'Falta de material',
+  'A facturar',
+] as const;
+
+export type IncidenceStatus = (typeof INCIDENCE_STATUSES)[number];
+
 export interface Group {
   id: string;
   name: string;
@@ -75,7 +87,7 @@ export interface Incidence {
   reportedBy: string;
   description: string;
   imageUrls: string[];
-  status: 'Backlog' | 'Presupuestado' | 'En progreso' | 'Resuelto' | 'Cancelado';
+  status: IncidenceStatus;
   severity: number;
   billTo: 'Propietario' | 'Explotador';
   createdAt?: Timestamp;
@@ -84,7 +96,11 @@ export interface Incidence {
 export interface IncidenceHistory {
   id: string;
   changedBy: string;
-  oldStatus: string;
-  newStatus: string;
+  changeType: 'status' | 'field';
+  oldStatus?: string;
+  newStatus?: string;
+  field?: string;
+  oldValue?: string;
+  newValue?: string;
   timestamp: Timestamp;
 }

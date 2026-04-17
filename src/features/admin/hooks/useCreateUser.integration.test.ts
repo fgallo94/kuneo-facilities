@@ -7,17 +7,15 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  getIdToken,
 } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import {
   cleanupFirebaseApps,
   clearAuthEmulator,
   clearFirestoreEmulator,
-  getTestApp,
   getTestEmulatorAuth,
-  getTestEmulatorDb,
   setCustomClaims,
+  getAdminDb,
 } from '@/lib/firebaseEmulatorTestHelpers';
 
 describe('useCreateUser Integration (Emulator)', () => {
@@ -35,9 +33,7 @@ describe('useCreateUser Integration (Emulator)', () => {
   });
 
   it('permite a un admin crear un nuevo usuario y persiste el rol en Firestore', async () => {
-    const setupApp = getTestApp();
-    const adminAuth = getTestEmulatorAuth(setupApp);
-    const adminDb = getTestEmulatorDb(setupApp);
+    const adminAuth = getTestEmulatorAuth();
 
     // 1. Crear admin y setear custom claim
     const adminCredential = await createUserWithEmailAndPassword(
@@ -46,7 +42,9 @@ describe('useCreateUser Integration (Emulator)', () => {
       'AdminPass123!'
     );
     await setCustomClaims(adminCredential.user.uid, { role: 'admin' });
-    await setDoc(doc(adminDb, 'users', adminCredential.user.uid), {
+
+    // Seed del documento admin via Admin SDK (bypass de reglas de seguridad)
+    await getAdminDb().doc('users/' + adminCredential.user.uid).set({
       email: 'admin@kuneo.app',
       displayName: 'Admin User',
       role: 'admin',
@@ -58,13 +56,12 @@ describe('useCreateUser Integration (Emulator)', () => {
     const clientAuth = getClientAuth();
     const clientDb = getClientFirestore();
 
-    // 3. Loguear admin en el singleton auth y forzar refresh de token
-    const adminClientCredential = await signInWithEmailAndPassword(
+    // 3. Loguear admin en el singleton auth
+    await signInWithEmailAndPassword(
       clientAuth,
       'admin@kuneo.app',
       'AdminPass123!'
     );
-    await getIdToken(adminClientCredential.user, true);
 
     // 4. Renderizar hook y crear usuario
     const { result } = renderHook(() => useCreateUser());
