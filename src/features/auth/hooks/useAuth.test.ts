@@ -16,6 +16,8 @@ const mockOnAuthStateChanged = vi.fn();
 const mockSignInWithEmailAndPassword = vi.fn();
 const mockSignOut = vi.fn();
 const mockSetPersistence = vi.fn();
+const mockSendPasswordResetEmail = vi.fn();
+const mockConfirmPasswordReset = vi.fn();
 
 vi.mock('firebase/auth', async () => {
   const actual = await vi.importActual<typeof import('firebase/auth')>('firebase/auth');
@@ -25,6 +27,8 @@ vi.mock('firebase/auth', async () => {
     signInWithEmailAndPassword: (...args: unknown[]) => mockSignInWithEmailAndPassword(...args),
     signOut: (...args: unknown[]) => mockSignOut(...args),
     setPersistence: (...args: unknown[]) => mockSetPersistence(...args),
+    sendPasswordResetEmail: (...args: unknown[]) => mockSendPasswordResetEmail(...args),
+    confirmPasswordReset: (...args: unknown[]) => mockConfirmPasswordReset(...args),
     browserLocalPersistence: 'LOCAL',
     browserSessionPersistence: 'SESSION',
     getAuth: vi.fn(() => ({} as never)),
@@ -142,5 +146,91 @@ describe('useAuth', () => {
     });
 
     expect(result.current.error).toBeNull();
+  });
+
+  describe('sendPasswordReset', () => {
+    it('envía el correo de restablecimiento con la URL correcta', async () => {
+      mockSendPasswordResetEmail.mockResolvedValue(undefined);
+      const locationSpy = vi.spyOn(window, 'location', 'get').mockReturnValue(
+        { origin: 'https://kuneo.app' } as Location
+      );
+
+      const { result } = renderHook(() => useAuth());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      await act(async () => {
+        await result.current.sendPasswordReset('user@kuneo.app');
+      });
+
+      expect(mockSendPasswordResetEmail).toHaveBeenCalledWith(
+        expect.anything(),
+        'user@kuneo.app',
+        {
+          url: 'https://kuneo.app/login?mode=resetPassword&email=user%40kuneo.app',
+          handleCodeInApp: false,
+        }
+      );
+      expect(result.current.error).toBeNull();
+
+      locationSpy.mockRestore();
+    });
+
+    it('maneja errores al enviar el correo', async () => {
+      mockSendPasswordResetEmail.mockRejectedValue(new Error('auth/invalid-email'));
+      const locationSpy = vi.spyOn(window, 'location', 'get').mockReturnValue(
+        { origin: 'https://kuneo.app' } as Location
+      );
+
+      const { result } = renderHook(() => useAuth());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      await act(async () => {
+        try {
+          await result.current.sendPasswordReset('bad-email');
+        } catch {
+          // esperado
+        }
+      });
+
+      expect(result.current.error).toBe('Correo electrónico no válido');
+      locationSpy.mockRestore();
+    });
+  });
+
+  describe('confirmPasswordReset', () => {
+    it('confirma el cambio de contraseña con el código y nueva contraseña', async () => {
+      mockConfirmPasswordReset.mockResolvedValue(undefined);
+
+      const { result } = renderHook(() => useAuth());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      await act(async () => {
+        await result.current.confirmPasswordReset('abc123', 'NewPass123!');
+      });
+
+      expect(mockConfirmPasswordReset).toHaveBeenCalledWith(
+        expect.anything(),
+        'abc123',
+        'NewPass123!'
+      );
+      expect(result.current.error).toBeNull();
+    });
+
+    it('maneja errores de código expirado o inválido', async () => {
+      mockConfirmPasswordReset.mockRejectedValue(new Error('auth/expired-action-code'));
+
+      const { result } = renderHook(() => useAuth());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      await act(async () => {
+        try {
+          await result.current.confirmPasswordReset('oldcode', 'NewPass123!');
+        } catch {
+          // esperado
+        }
+      });
+
+      expect(result.current.error).toBe('El enlace ha expirado o no es válido. Solicita uno nuevo');
+    });
   });
 });

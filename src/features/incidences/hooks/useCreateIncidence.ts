@@ -53,7 +53,7 @@ export function useCreateIncidence() {
         reportedBy: user.uid,
         description: payload.description,
         imageUrls: [],
-        status: 'Backlog',
+        status: 'Reportada',
         severity,
         billTo: 'Propietario',
         createdAt: serverTimestamp(),
@@ -80,8 +80,9 @@ export function useCreateIncidence() {
       const historyRef = doc(collection(db, 'incidences', incidenceId, 'history'));
       await setDoc(historyRef, {
         changedBy: user.uid,
+        changeType: 'status',
         oldStatus: 'N/A',
-        newStatus: 'Backlog',
+        newStatus: 'Reportada',
         timestamp: serverTimestamp(),
       });
 

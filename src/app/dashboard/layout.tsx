@@ -14,12 +14,16 @@ import {
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 
-const baseNavItems = [
+const userNavItems = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Incidencias', href: '/dashboard/incidences/new', icon: FileText },
 ];
 
-const adminNavItem = { label: 'Admin', href: '/dashboard/admin', icon: Shield };
+const adminNavItems = [
+  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { label: 'Incidencias', href: '/dashboard/incidences', icon: FileText },
+  { label: 'Admin', href: '/dashboard/admin', icon: Shield },
+];
 
 export default function DashboardLayout({
   children,
@@ -34,7 +38,7 @@ export default function DashboardLayout({
 
   const isAdmin = user?.role === 'admin';
   const navItems = React.useMemo(
-    () => (isAdmin ? [...baseNavItems, adminNavItem] : baseNavItems),
+    () => (isAdmin ? adminNavItems : userNavItems),
     [isAdmin]
   );
 

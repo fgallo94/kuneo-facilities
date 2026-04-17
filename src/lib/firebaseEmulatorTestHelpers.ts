@@ -63,3 +63,10 @@ export async function setCustomClaims(
   }
   await admin.auth().setCustomUserClaims(uid, claims);
 }
+
+export function getAdminDb(): admin.firestore.Firestore {
+  if (admin.apps.length === 0) {
+    admin.initializeApp({ projectId: 'demo-project' });
+  }
+  return admin.firestore();
+}

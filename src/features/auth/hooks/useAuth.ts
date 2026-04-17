@@ -6,6 +6,8 @@ import {
   setPersistence,
   browserLocalPersistence,
   browserSessionPersistence,
+  sendPasswordResetEmail,
+  confirmPasswordReset,
   type User as FirebaseUser,
 } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
@@ -22,6 +24,8 @@ interface UseAuthReturn {
   login: (email: string, password: string, remember?: boolean) => Promise<void>;
   logout: () => Promise<void>;
   clearError: () => void;
+  sendPasswordReset: (email: string) => Promise<void>;
+  confirmPasswordReset: (oobCode: string, newPassword: string) => Promise<void>;
 }
 
 export function useAuth(): UseAuthReturn {
@@ -80,7 +84,42 @@ export function useAuth(): UseAuthReturn {
 
   const clearError = useCallback(() => setError(null), []);
 
-  return { user, loading, error, login, logout, clearError };
+  const sendPasswordReset = useCallback(async (email: string) => {
+    setError(null);
+    try {
+      const actionCodeSettings = {
+        url: `${window.location.origin}/login?mode=resetPassword&email=${encodeURIComponent(email)}`,
+        handleCodeInApp: false,
+      };
+      await sendPasswordResetEmail(getClientAuth(), email, actionCodeSettings);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error desconocido';
+      setError(translateFirebaseError(message));
+      throw err;
+    }
+  }, []);
+
+  const confirmPasswordResetHandler = useCallback(async (oobCode: string, newPassword: string) => {
+    setError(null);
+    try {
+      await confirmPasswordReset(getClientAuth(), oobCode, newPassword);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error desconocido';
+      setError(translateFirebaseError(message));
+      throw err;
+    }
+  }, []);
+
+  return {
+    user,
+    loading,
+    error,
+    login,
+    logout,
+    clearError,
+    sendPasswordReset,
+    confirmPasswordReset: confirmPasswordResetHandler,
+  };
 }
 
 function translateFirebaseError(message: string): string {
@@ -92,6 +131,12 @@ function translateFirebaseError(message: string): string {
   }
   if (message.includes('auth/invalid-email')) {
     return 'Correo electrónico no válido';
+  }
+  if (message.includes('auth/weak-password')) {
+    return 'La contraseña es demasiado débil';
+  }
+  if (message.includes('auth/expired-action-code') || message.includes('auth/invalid-action-code')) {
+    return 'El enlace ha expirado o no es válido. Solicita uno nuevo';
   }
   return 'Error al iniciar sesión. Inténtalo de nuevo';
 }

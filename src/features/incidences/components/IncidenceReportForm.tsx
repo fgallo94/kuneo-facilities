@@ -16,7 +16,9 @@ import { Textarea } from '@/components/ui/Textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { PhotoUploader } from './PhotoUploader';
 import { useProperties } from '@/features/incidences/hooks/useProperties';
-import { ArrowRight, CheckCircle2, Info, MapPin } from 'lucide-react';
+import { ArrowRight, Info, MapPin } from 'lucide-react';
+import { formatRelativeTime } from '@/lib/formatRelativeTime';
+import type { Incidence } from '@/types';
 
 const categoryOptions = INCIDENCE_CATEGORIES.map((c) => ({
   value: c,
@@ -52,11 +54,15 @@ export interface SubmitIncidenceData extends IncidenceFormData {
 interface IncidenceReportFormProps {
   onSubmit: (data: SubmitIncidenceData) => void;
   isLoading?: boolean;
+  openIncidences?: Incidence[];
+  openIncidencesLoading?: boolean;
 }
 
 export function IncidenceReportForm({
   onSubmit,
   isLoading = false,
+  openIncidences = [],
+  openIncidencesLoading = false,
 }: IncidenceReportFormProps) {
   const { properties, loading: propertiesLoading } = useProperties();
 
@@ -91,10 +97,6 @@ export function IncidenceReportForm({
     [properties]
   );
 
-  const selectedProperty = React.useMemo(
-    () => properties.find((p) => p.id === propertyIdValue),
-    [properties, propertyIdValue]
-  );
 
   const handleFormSubmit = (data: IncidenceFormData) => {
     const property = properties.find((p) => p.id === data.propertyId);
@@ -172,11 +174,6 @@ export function IncidenceReportForm({
                 {errors.propertyId && (
                   <p className="mt-1 text-xs text-red-600">
                     {errors.propertyId.message}
-                  </p>
-                )}
-                {selectedProperty && (
-                  <p className="mt-1 text-xs text-slate-500">
-                    Instalación: {selectedProperty.installationId}
                   </p>
                 )}
               </div>
@@ -336,28 +333,40 @@ export function IncidenceReportForm({
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="flex items-start gap-3 rounded-lg border border-slate-100 bg-slate-50 p-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-900">
-                  <MapPin className="h-4 w-4" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-slate-900">
-                    Calentador hace ruido
-                  </p>
-                  <p className="text-xs text-slate-500">En revisión • hace 2 días</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3 rounded-lg border border-slate-100 bg-slate-50 p-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-green-700">
-                  <CheckCircle2 className="h-4 w-4" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-slate-900">
-                    Cerradura inteligente falla
-                  </p>
-                  <p className="text-xs text-slate-500">Resuelto • hace 5 días</p>
-                </div>
-              </div>
+              {openIncidencesLoading ? (
+                <p className="text-sm text-slate-500">Cargando...</p>
+              ) : openIncidences.length === 0 ? (
+                <p className="text-sm text-slate-500">No hay incidencias abiertas</p>
+              ) : (
+                openIncidences.map((inc) => {
+                  const isInProgress = inc.status === 'En reparación';
+                  return (
+                    <div
+                      key={inc.id}
+                      className="flex items-start gap-3 rounded-lg border border-slate-100 bg-slate-50 p-3"
+                    >
+                      <div
+                        className={`flex h-8 w-8 items-center justify-center rounded-full ${
+                          isInProgress
+                            ? 'bg-amber-100 text-amber-700'
+                            : 'bg-blue-100 text-blue-900'
+                        }`}
+                      >
+                        <MapPin className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium text-slate-900">
+                          {inc.title}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          {inc.status}
+                          {inc.createdAt ? ` • ${formatRelativeTime(inc.createdAt)}` : ''}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </CardContent>
           </Card>
         </aside>
