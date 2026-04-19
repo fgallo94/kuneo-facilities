@@ -97,13 +97,23 @@ export interface Incidence {
 export interface IncidenceHistory {
   id: string;
   changedBy: string;
-  changeType: 'status' | 'field';
+  changedByName?: string;
+  changeType: 'status' | 'field' | 'comment' | 'creation';
   oldStatus?: string;
   newStatus?: string;
   field?: string;
   oldValue?: string;
   newValue?: string;
+  comment?: string;
   timestamp: Timestamp;
+}
+
+export interface IncidenceComment {
+  id: string;
+  authorId: string;
+  authorName?: string;
+  text: string;
+  createdAt: Timestamp;
 }
 
 export type NotificationType = 'new_incidence';

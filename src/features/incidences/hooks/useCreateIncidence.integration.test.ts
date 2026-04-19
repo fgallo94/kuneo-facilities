@@ -126,7 +126,7 @@ describe('useCreateIncidence Integration (Emulator)', () => {
     expect(historySnap.docs.length).toBe(1);
     const historyData = historySnap.docs[0].data();
     expect(historyData.newStatus).toBe('Reportada');
-    expect(historyData.changeType).toBe('status');
+    expect(historyData.changeType).toBe('creation');
     expect(historyData.changedBy).toBe(clientAuth.currentUser!.uid);
   });
 

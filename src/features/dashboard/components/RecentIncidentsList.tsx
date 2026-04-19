@@ -53,12 +53,14 @@ interface RecentIncidentsListProps {
   incidences: Incidence[];
   properties: Property[];
   loading?: boolean;
+  onSelect?: (incidence: Incidence) => void;
 }
 
 export function RecentIncidentsList({
   incidences,
   properties,
   loading = false,
+  onSelect,
 }: RecentIncidentsListProps) {
   const propertyMap = new Map(properties.map((p) => [p.id, p]));
 
@@ -85,7 +87,8 @@ export function RecentIncidentsList({
         return (
           <div
             key={inc.id}
-            className="flex items-center gap-4 rounded-xl border border-slate-100 bg-slate-50 p-4 transition hover:border-slate-200"
+            onClick={() => onSelect?.(inc)}
+            className="flex cursor-pointer items-center gap-4 rounded-xl border border-slate-100 bg-slate-50 p-4 transition hover:border-slate-200 hover:bg-slate-100"
           >
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-200 text-slate-600">
               <MapPin className="h-5 w-5" />

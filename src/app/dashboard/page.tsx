@@ -11,10 +11,12 @@ import { useProperties } from '@/features/incidences/hooks/useProperties';
 import { IncidentTrendsChart } from '@/features/dashboard/components/IncidentTrendsChart';
 import { RecentIncidentsList } from '@/features/dashboard/components/RecentIncidentsList';
 import { FileText, Clock, CheckCircle2, Loader2 } from 'lucide-react';
+import { useIncidenceDetailContext } from '@/features/incidences/context/IncidenceDetailContext';
 
 export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
+  const { openDetail } = useIncidenceDetailContext();
   const isAdmin = user?.role === 'admin';
 
   const {
@@ -157,6 +159,7 @@ export default function DashboardPage() {
             incidences={recentIncidences}
             properties={properties}
             loading={recentLoading || propertiesLoading}
+            onSelect={(inc) => openDetail(inc.id)}
           />
         </div>
       </div>

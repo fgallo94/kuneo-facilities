@@ -10,7 +10,7 @@ import {
 import type { Incidence, Installation, User } from '@/types';
 import { INCIDENCE_STATUSES } from '@/types';
 import { IncidenceCard } from './IncidenceCard';
-import { EditIncidenceModal } from './EditIncidenceModal';
+import { useIncidenceDetailContext } from '@/features/incidences/context/IncidenceDetailContext';
 
 interface IncidenceKanbanBoardProps {
   incidences: Incidence[];
@@ -25,9 +25,8 @@ export function IncidenceKanbanBoard({
   installations,
   users,
   onUpdate,
-  isUpdating = false,
 }: IncidenceKanbanBoardProps) {
-  const [selectedIncidence, setSelectedIncidence] = useState<Incidence | null>(null);
+  const { openDetail } = useIncidenceDetailContext();
   const [localIncidences, setLocalIncidences] = useState<Incidence[]>(incidences);
 
   const installationMap = useMemo(
@@ -121,7 +120,7 @@ export function IncidenceKanbanBoard({
                                   incidence={inc}
                                   installation={installationMap.get(inc.installationId)}
                                   reporter={userMap.get(inc.reportedBy)}
-                                  onClick={() => setSelectedIncidence(inc)}
+                                  onClick={() => openDetail(inc.id)}
                                 />
                               </div>
                             )}
@@ -138,24 +137,7 @@ export function IncidenceKanbanBoard({
         </div>
       </DragDropContext>
 
-      <EditIncidenceModal
-        key={selectedIncidence?.id ?? 'closed'}
-        incidence={selectedIncidence}
-        installation={
-          selectedIncidence
-            ? installationMap.get(selectedIncidence.installationId)
-            : undefined
-        }
-        reporter={
-          selectedIncidence ? userMap.get(selectedIncidence.reportedBy) : undefined
-        }
-        onClose={() => setSelectedIncidence(null)}
-        onSave={(original, payload) => {
-          onUpdate(original, payload);
-          setSelectedIncidence(null);
-        }}
-        isLoading={isUpdating}
-      />
+
     </>
   );
 }

@@ -63,6 +63,7 @@ describe('useUpdateIncidence', () => {
     expect(mockUpdateDoc).toHaveBeenCalledWith('docRef', { status: 'En reparación' });
     expect(mockSetDoc).toHaveBeenCalledWith('docRef', {
       changedBy: 'admin_123',
+      changedByName: 'Usuario',
       changeType: 'status',
       oldStatus: 'Reportada',
       newStatus: 'En reparación',
@@ -96,6 +97,7 @@ describe('useUpdateIncidence', () => {
     expect(mockUpdateDoc).toHaveBeenCalledWith('docRef', { description: 'desc nueva' });
     expect(mockSetDoc).toHaveBeenCalledWith('docRef', {
       changedBy: 'admin_123',
+      changedByName: 'Usuario',
       changeType: 'field',
       field: 'description',
       oldValue: 'desc vieja',

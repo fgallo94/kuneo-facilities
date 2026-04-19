@@ -108,8 +108,22 @@ service cloud.firestore {
           && request.resource.data.keys().hasAll(['changedBy', 'changeType', 'timestamp'])
           && request.resource.data.changedBy == request.auth.uid
           && request.resource.data.changeType is string
-          && (request.resource.data.changeType == 'status' || request.resource.data.changeType == 'field')
-          && request.resource.data.timestamp is timestamp;
+          && request.resource.data.changeType in ['status', 'field', 'comment', 'creation']
+          && request.resource.data.timestamp is timestamp
+          && (
+            request.resource.data.changeType != 'comment'
+            || (request.resource.data.keys().hasAll(['comment']) && request.resource.data.comment is string)
+          );
+        allow update, delete: if false;
+      }
+
+      match /comments/{commentId} {
+        allow read: if isAdmin() || isOwner(get(/databases/$(database)/documents/incidences/$(incidenceId)).data.reportedBy);
+        allow create: if isAuthenticated()
+          && request.resource.data.keys().hasAll(['authorId', 'text', 'createdAt'])
+          && request.resource.data.authorId == request.auth.uid
+          && request.resource.data.text is string && request.resource.data.text.size() > 0
+          && request.resource.data.createdAt is timestamp;
         allow update, delete: if false;
       }
     }

@@ -17,7 +17,16 @@ interface CreateIncidencePayload extends IncidenceFormData {
 }
 
 function translateError(err: unknown): string {
-  if (err instanceof Error) return err.message;
+  if (err instanceof Error) {
+    const msg = err.message;
+    if (msg.includes('permission') || msg.includes('Permission')) {
+      return 'No tienes permisos para realizar esta acción. Contacta al administrador.';
+    }
+    if (msg.includes('network') || msg.includes('offline')) {
+      return 'Error de conexión. Verifica tu red e intenta de nuevo.';
+    }
+    return msg;
+  }
   return 'Error inesperado al crear la incidencia';
 }
 
@@ -78,11 +87,12 @@ export function useCreateIncidence() {
       }
 
       // 4. Registrar entrada inicial en history
+      const changedByName = user.displayName || user.email || 'Usuario';
       const historyRef = doc(collection(db, 'incidences', incidenceId, 'history'));
       await setDoc(historyRef, {
         changedBy: user.uid,
-        changeType: 'status',
-        oldStatus: 'N/A',
+        changedByName,
+        changeType: 'creation',
         newStatus: 'Reportada',
         timestamp: serverTimestamp(),
       });

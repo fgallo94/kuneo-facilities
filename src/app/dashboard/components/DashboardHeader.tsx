@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useIncidenceDetailContext } from '@/features/incidences/context/IncidenceDetailContext';
 import { Settings, User } from 'lucide-react';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useAllIncidences } from '@/features/dashboard/hooks/useAllIncidences';
@@ -16,7 +16,7 @@ import type { UserNotification } from '@/types';
 
 export function DashboardHeader() {
   const { user } = useAuth();
-  const router = useRouter();
+  const { openDetail } = useIncidenceDetailContext();
   const { incidences } = useAllIncidences();
 
   const userId = user?.uid;
@@ -55,7 +55,11 @@ export function DashboardHeader() {
   };
 
   const handleSearchSelect = (incidence: { id: string }) => {
-    router.push(`/dashboard/incidences?id=${incidence.id}`);
+    openDetail(incidence.id);
+  };
+
+  const handleNotificationSelect = (incidenceId: string) => {
+    openDetail(incidenceId);
   };
 
   if (!isAdmin) {
@@ -80,6 +84,7 @@ export function DashboardHeader() {
             unreadCount={unreadCount}
             onMarkAsRead={markAsRead}
             onDismiss={handleDismissRequest}
+            onSelect={handleNotificationSelect}
           />
 
           <button
