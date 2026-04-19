@@ -42,6 +42,7 @@ export function useUpdateIncidence() {
 
       const updateData: Record<string, unknown> = {};
       const historyEntries: Omit<IncidenceHistory, 'id' | 'timestamp'>[] = [];
+      const changedByName = user.displayName || user.email || 'Usuario';
 
       // Detect field changes
       (Object.keys(payload) as (keyof IncidenceUpdatePayload)[]).forEach((key) => {
@@ -52,6 +53,7 @@ export function useUpdateIncidence() {
           if (key === 'status') {
             historyEntries.push({
               changedBy: user.uid,
+              changedByName,
               changeType: 'status',
               oldStatus: String(oldValue ?? ''),
               newStatus: String(newValue),
@@ -59,6 +61,7 @@ export function useUpdateIncidence() {
           } else {
             historyEntries.push({
               changedBy: user.uid,
+              changedByName,
               changeType: 'field',
               field: key,
               oldValue: String(oldValue ?? ''),

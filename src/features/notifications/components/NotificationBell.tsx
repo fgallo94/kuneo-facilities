@@ -9,6 +9,7 @@ interface NotificationBellProps {
   unreadCount: number;
   onMarkAsRead: (id: string) => void;
   onDismiss: (id: string, urgency: 'normal' | 'urgent') => void;
+  onSelect?: (incidenceId: string) => void;
 }
 
 export function NotificationBell({
@@ -16,6 +17,7 @@ export function NotificationBell({
   unreadCount,
   onMarkAsRead,
   onDismiss,
+  onSelect,
 }: NotificationBellProps) {
   const [open, setOpen] = React.useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -70,6 +72,7 @@ export function NotificationBell({
                   ].join(' ')}
                   onClick={() => {
                     if (!n.read) onMarkAsRead(n.id);
+                    onSelect?.(n.incidenceId);
                   }}
                 >
                   <div className="flex items-start justify-between gap-2">

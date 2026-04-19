@@ -1,0 +1,506 @@
+'use client';
+
+import { useEffect, useMemo, useState } from 'react';
+import { X, Send } from 'lucide-react';
+import { useIncidenceDetail } from '../hooks/useIncidenceDetail';
+import { useIncidenceHistory } from '../hooks/useIncidenceHistory';
+import { useIncidenceComments } from '../hooks/useIncidenceComments';
+import { useAddComment } from '../hooks/useAddComment';
+import { useAuth } from '@/features/auth/hooks/useAuth';
+import { useUsers } from '@/features/dashboard/hooks/useUsers';
+import { useInstallations } from '@/features/dashboard/hooks/useInstallations';
+import { useUpdateIncidence } from '@/features/dashboard/hooks/useUpdateIncidence';
+import { EditIncidenceModal } from '@/features/dashboard/components/EditIncidenceModal';
+import { formatRelativeTime } from '@/lib/formatRelativeTime';
+import type { IncidenceHistory } from '@/types';
+
+interface IncidenceDetailModalProps {
+  incidenceId: string;
+  onClose: () => void;
+}
+
+const URGENCY_LABELS: Record<string, string> = {
+  normal: 'Normal',
+  high: 'Alta',
+  urgent: 'Urgente',
+};
+
+const URGENCY_STYLES: Record<string, string> = {
+  normal: 'bg-slate-100 text-slate-700',
+  high: 'bg-amber-100 text-amber-700',
+  urgent: 'bg-red-100 text-red-700',
+};
+
+const STATUS_STYLES: Record<string, string> = {
+  Reportada: 'bg-blue-100 text-blue-700',
+  'En reparación': 'bg-yellow-100 text-yellow-700',
+  Reparado: 'bg-green-100 text-green-700',
+  'A falta de presupuesto': 'bg-orange-100 text-orange-700',
+  Presupuestado: 'bg-purple-100 text-purple-700',
+  'Falta de material': 'bg-pink-100 text-pink-700',
+  'A facturar': 'bg-indigo-100 text-indigo-700',
+};
+
+const CATEGORY_LABELS: Record<string, string> = {
+  plumbing: 'Plomería',
+  electrical: 'Electricidad',
+  carpentry: 'Carpintería',
+  hvac: 'Climatización',
+  security: 'Seguridad',
+  cleaning: 'Limpieza',
+  other: 'Otros',
+};
+
+function getUrgencyFromSeverity(severity: number, urgency?: string): string {
+  if (urgency) return urgency;
+  if (severity >= 5) return 'urgent';
+  if (severity >= 3) return 'high';
+  return 'normal';
+}
+
+function formatHistoryEntry(entry: IncidenceHistory): { title: string; subtitle?: string } {
+  const name = entry.changedByName || 'Usuario';
+  if (entry.changeType === 'creation') {
+    return { title: `${name} reportó la incidencia` };
+  }
+  if (entry.changeType === 'comment') {
+    return { title: `${name} comentó`, subtitle: entry.comment };
+  }
+  if (entry.changeType === 'status') {
+    return { title: `${name} cambió el estado`, subtitle: `${entry.oldStatus ?? '-'} → ${entry.newStatus ?? '-'}` };
+  }
+  return { title: `${name} actualizó un campo`, subtitle: `"${entry.field ?? 'desconocido'}" : ${entry.oldValue ?? '-'} → ${entry.newValue ?? '-'}` };
+}
+
+function formatDate(date: Date): string {
+  return date.toLocaleDateString('es-ES', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+}
+
+function formatTime(date: Date): string {
+  return date.toLocaleTimeString('es-ES', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+function normalizeTimestamp(
+  ts: { toDate: () => Date } | { seconds: number } | undefined
+): Date | null {
+  if (!ts) return null;
+  if ('toDate' in ts && typeof ts.toDate === 'function') {
+    return ts.toDate();
+  }
+  return new Date((ts as { seconds: number }).seconds * 1000);
+}
+
+export function IncidenceDetailModal({
+  incidenceId,
+  onClose,
+}: IncidenceDetailModalProps) {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
+
+  const { incidence, loading: incidenceLoading, error: incidenceError } = useIncidenceDetail(incidenceId);
+  const { history, loading: historyLoading, error: historyError } = useIncidenceHistory(incidenceId);
+  const { comments, loading: commentsLoading, error: commentsError } = useIncidenceComments(incidenceId);
+  const { addComment, isLoading: addingComment, error: commentError, clearError: clearCommentError } = useAddComment();
+  const { users } = useUsers();
+  const { installations } = useInstallations();
+  const { updateIncidence, isLoading: isUpdating } = useUpdateIncidence();
+
+  const [editing, setEditing] = useState(false);
+  const [commentText, setCommentText] = useState('');
+
+  const userMap = useMemo(() => new Map(users.map((u) => [u.uid, u])), [users]);
+  const installationMap = useMemo(
+    () => new Map(installations.map((i) => [i.id, i])),
+    [installations]
+  );
+
+  // Lock body scroll
+  useEffect(() => {
+    const original = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = original;
+    };
+  }, []);
+
+  // Close on Escape
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === 'Escape' && !editing) {
+        onClose();
+      }
+    }
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [onClose, editing]);
+
+  const handleSubmitComment = async () => {
+    if (!commentText.trim() || addingComment) return;
+    clearCommentError();
+    try {
+      await addComment(incidenceId, commentText);
+      setCommentText('');
+    } catch {
+      // error is surfaced via commentError
+    }
+  };
+
+  if (incidenceLoading) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <div className="w-full max-w-3xl rounded-xl bg-white p-8 shadow-xl">
+          <div className="flex h-40 items-center justify-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-900" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!incidence) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <div className="w-full max-w-3xl rounded-xl bg-white p-8 shadow-xl">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold text-slate-900">Incidencia no encontrada</h2>
+            <button
+              onClick={onClose}
+              className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          <p className="mt-4 text-sm text-slate-600">
+            La incidencia solicitada no existe o ha sido eliminada.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const urgencyKey = getUrgencyFromSeverity(incidence.severity, incidence.urgency);
+  const urgencyLabel = URGENCY_LABELS[urgencyKey] ?? 'Normal';
+  const urgencyStyle = URGENCY_STYLES[urgencyKey] ?? URGENCY_STYLES.normal;
+  const statusStyle = STATUS_STYLES[incidence.status] ?? 'bg-slate-100 text-slate-700';
+
+  const reporter = userMap.get(incidence.reportedBy);
+  const reporterName = reporter?.displayName || reporter?.email || 'Usuario desconocido';
+  const reporterInitials = reporter?.displayName
+    ? reporter.displayName
+        .split(' ')
+        .map((n) => n[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase()
+    : reporter?.email?.slice(0, 2).toUpperCase() ?? 'U';
+
+  const installation = installationMap.get(incidence.installationId);
+  const location = [installation?.name, installation?.address].filter(Boolean).join(' • ');
+
+  const reportedAt = incidence.createdAt
+    ? formatRelativeTime(incidence.createdAt)
+    : '';
+
+  const reportedDateTime = incidence.createdAt
+    ? (() => {
+        const d = normalizeTimestamp(incidence.createdAt);
+        return d ? `${formatDate(d)} a las ${formatTime(d)}` : '';
+      })()
+    : '';
+
+  // Build timeline from history (ascending order). Fallback to creation stub for legacy incidences without history.
+  const timeline = history.length > 0
+    ? history.map((h) => {
+        const entry = formatHistoryEntry(h);
+        const d = normalizeTimestamp(h.timestamp);
+        return {
+          id: h.id,
+          text: entry.title,
+          subtitle: entry.subtitle,
+          detail: d ? `${formatDate(d)} a las ${formatTime(d)}` : '',
+          isInitial: h.changeType === 'creation',
+        };
+      })
+    : [
+        {
+          id: 'created',
+          text: 'Reportada',
+          subtitle: undefined,
+          detail: reportedDateTime,
+          isInitial: true,
+        },
+      ];
+
+  return (
+    <>
+      <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4 pt-10 md:items-center md:pt-0">
+        <div className="w-full max-w-3xl overflow-hidden rounded-xl bg-white shadow-xl">
+          {/* Header */}
+          <div className="bg-blue-900 px-6 py-5">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <span
+                  className={`inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${statusStyle}`}
+                >
+                  {incidence.status}
+                </span>
+                <span
+                  className={`inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${urgencyStyle}`}
+                >
+                  {urgencyLabel}
+                </span>
+              </div>
+              <button
+                onClick={onClose}
+                className="rounded-md p-1 text-blue-200 transition-colors hover:bg-blue-800 hover:text-white"
+                aria-label="Cerrar"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <h2 className="mt-3 text-xl font-bold text-white">
+              {incidence.title}
+            </h2>
+            <p className="mt-1 text-xs text-blue-200">
+              {location || 'Ubicación desconocida'} {reportedAt ? `• ${reportedAt}` : ''}
+            </p>
+          </div>
+
+          {/* Body */}
+          <div className="bg-slate-50 px-6 py-5">
+            {(incidenceError || historyError || commentsError) && (
+              <div className="mb-4 rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">
+                <p className="font-medium">Error al cargar la incidencia</p>
+                <p className="mt-0.5 text-xs">
+                  {incidenceError || historyError || commentsError}
+                </p>
+              </div>
+            )}
+            <div className="grid gap-4 md:grid-cols-3">
+              {/* Description */}
+              <div className="rounded-xl border border-slate-200 bg-white p-4 md:col-span-2">
+                <h3 className="text-sm font-semibold text-slate-900">Descripción</h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                  {incidence.description || 'Sin descripción'}
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-500">
+                  <span className="rounded-md bg-slate-100 px-2 py-1">
+                    Categoría: {CATEGORY_LABELS[incidence.category] ?? incidence.category}
+                  </span>
+                  <span className="rounded-md bg-slate-100 px-2 py-1">
+                    Facturar a: {incidence.billTo}
+                  </span>
+                  <span className="rounded-md bg-slate-100 px-2 py-1">
+                    Severidad: {incidence.severity}/5
+                  </span>
+                </div>
+              </div>
+
+              {/* Reported By */}
+              <div className="rounded-xl border border-slate-200 bg-white p-4">
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Reportado por
+                </h3>
+                <div className="mt-3 flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-900 text-xs font-bold text-white">
+                    {reporterInitials}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">{reporterName}</p>
+                    <p className="text-xs text-slate-500">{reportedDateTime}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4 grid gap-4 md:grid-cols-3">
+              {/* Visual Evidence */}
+              <div className="rounded-xl border border-slate-200 bg-white p-4 md:col-span-2">
+                <h3 className="text-sm font-semibold text-slate-900">Evidencia visual</h3>
+                {incidence.imageUrls.length === 0 ? (
+                  <p className="mt-3 text-sm text-slate-400">No hay imágenes adjuntas</p>
+                ) : (
+                  <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    {incidence.imageUrls.map((url, idx) => (
+                      <a
+                        key={idx}
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group relative aspect-square overflow-hidden rounded-lg border border-slate-200 bg-slate-100"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={url}
+                          alt={`Evidencia ${idx + 1}`}
+                          className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                          loading="lazy"
+                        />
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Activity History */}
+              <div className="rounded-xl border border-slate-200 bg-white p-4">
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Historial de actividad
+                </h3>
+                {historyLoading ? (
+                  <div className="mt-3 flex items-center justify-center py-6">
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-blue-900" />
+                  </div>
+                ) : timeline.length === 0 ? (
+                  <p className="mt-3 text-sm text-slate-400">Sin historial</p>
+                ) : (
+                  <div className="relative mt-3 pl-4">
+                    <div className="absolute left-[7px] top-2 bottom-2 w-px bg-slate-200" />
+                    <ul className="space-y-4">
+                      {timeline.map((item) => (
+                        <li key={item.id} className="relative">
+                          <span
+                            className={`absolute -left-[9px] top-1 h-2 w-2 rounded-full ring-2 ring-white ${
+                              item.isInitial ? 'bg-blue-600' : 'bg-slate-400'
+                            }`}
+                          />
+                          <p className="text-sm font-medium text-slate-800">{item.text}</p>
+                          {item.subtitle && (
+                            <p className="mt-0.5 text-xs text-slate-600">{item.subtitle}</p>
+                          )}
+                          {item.detail && (
+                            <p className="mt-0.5 text-[11px] text-slate-500">{item.detail}</p>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Comments Section */}
+            <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
+              <h3 className="text-sm font-semibold text-slate-900">Comentarios</h3>
+
+              {commentsLoading ? (
+                <div className="mt-3 flex items-center justify-center py-6">
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-blue-900" />
+                </div>
+              ) : comments.length === 0 ? (
+                <p className="mt-3 text-sm text-slate-400">
+                  No hay comentarios aún. Sé el primero en comentar.
+                </p>
+              ) : (
+                <ul className="mt-3 space-y-3">
+                  {comments.map((c) => {
+                    const authorName = c.authorName || 'Usuario';
+                    const createdAt = normalizeTimestamp(c.createdAt);
+                    return (
+                      <li key={c.id} className="rounded-lg border border-slate-100 bg-slate-50 p-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-semibold text-slate-700">
+                            {authorName}
+                          </span>
+                          {createdAt && (
+                            <span className="text-[11px] text-slate-400">
+                              {formatDate(createdAt)} a las {formatTime(createdAt)}
+                            </span>
+                          )}
+                        </div>
+                        <p className="mt-1 text-sm text-slate-700">{c.text}</p>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+
+              {/* Add Comment */}
+              <div className="mt-3 space-y-2">
+                {commentError && (
+                  <div className="rounded-md bg-red-50 px-3 py-2 text-xs text-red-700">
+                    {commentError}
+                  </div>
+                )}
+                <div className="flex items-end gap-2">
+                  <textarea
+                    value={commentText}
+                    onChange={(e) => {
+                      setCommentText(e.target.value);
+                      if (commentError) clearCommentError();
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSubmitComment();
+                      }
+                    }}
+                    placeholder="Escribe un comentario..."
+                    rows={2}
+                    className="flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-900 focus:ring-1 focus:ring-blue-900"
+                  />
+                  <button
+                    onClick={handleSubmitComment}
+                    disabled={!commentText.trim() || addingComment}
+                    className="flex min-w-[5.5rem] items-center justify-center gap-1 rounded-md bg-blue-900 px-3 py-2 text-sm font-medium text-white hover:bg-blue-800 disabled:opacity-50"
+                  >
+                    {addingComment ? (
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    ) : (
+                      <>
+                        <Send className="h-4 w-4" />
+                        Enviar
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="flex items-center justify-between border-t border-slate-200 bg-white px-6 py-4">
+            <button
+              onClick={onClose}
+              className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
+              Cerrar
+            </button>
+            {isAdmin && (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setEditing(true)}
+                  className="rounded-md bg-blue-900 px-4 py-2 text-sm font-medium text-white hover:bg-blue-800"
+                >
+                  Cambiar estado
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Nested Edit Modal */}
+      {editing && isAdmin && (
+        <EditIncidenceModal
+          incidence={incidence}
+          installation={installation}
+          reporter={reporter ?? undefined}
+          onClose={() => setEditing(false)}
+          onSave={(original, payload) => {
+            updateIncidence(original, payload);
+            setEditing(false);
+          }}
+          isLoading={isUpdating}
+        />
+      )}
+    </>
+  );
+}

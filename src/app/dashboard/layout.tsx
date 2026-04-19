@@ -14,6 +14,8 @@ import {
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { DashboardHeader } from './components/DashboardHeader';
+import { IncidenceDetailProvider, useIncidenceDetailContext } from '@/features/incidences/context/IncidenceDetailContext';
+import { IncidenceDetailModal } from '@/features/incidences/components/IncidenceDetailModal';
 
 const userNavItems = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -26,7 +28,7 @@ const adminNavItems = [
   { label: 'Admin', href: '/dashboard/admin', icon: Shield },
 ];
 
-export default function DashboardLayout({
+function DashboardLayoutInner({
   children,
 }: {
   children: React.ReactNode;
@@ -169,6 +171,7 @@ export default function DashboardLayout({
         </div>
         {children}
       </main>
+      <GlobalDetailModal />
 
       {/* Mobile Bottom Navigation */}
       {!isDesktop && (
@@ -194,5 +197,27 @@ export default function DashboardLayout({
         </nav>
       )}
     </div>
+  );
+}
+
+function GlobalDetailModal() {
+  const { incidenceId, closeDetail } = useIncidenceDetailContext();
+  if (!incidenceId) return null;
+  return (
+    <div className="relative z-50">
+      <IncidenceDetailModal key={incidenceId} incidenceId={incidenceId} onClose={closeDetail} />
+    </div>
+  );
+}
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <IncidenceDetailProvider>
+      <DashboardLayoutInner>{children}</DashboardLayoutInner>
+    </IncidenceDetailProvider>
   );
 }
