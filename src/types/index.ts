@@ -89,6 +89,7 @@ export interface Incidence {
   imageUrls: string[];
   status: IncidenceStatus;
   severity: number;
+  urgency?: UrgencyLevel;
   billTo: 'Propietario' | 'Explotador';
   createdAt?: Timestamp;
 }
@@ -103,4 +104,32 @@ export interface IncidenceHistory {
   oldValue?: string;
   newValue?: string;
   timestamp: Timestamp;
+}
+
+export type NotificationType = 'new_incidence';
+
+export interface Notification {
+  id: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  incidenceId: string;
+  urgency: Extract<UrgencyLevel, 'normal' | 'urgent'>;
+  createdAt: Timestamp;
+  createdBy: string;
+}
+
+export interface UserNotification {
+  id: string;
+  notificationId: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  incidenceId: string;
+  urgency: Extract<UrgencyLevel, 'normal' | 'urgent'>;
+  read: boolean;
+  dismissed: boolean;
+  dismissedAt?: Timestamp;
+  dismissedBy?: string;
+  createdAt: Timestamp;
 }

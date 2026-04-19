@@ -25,15 +25,21 @@ export function IncidentTrendsChart({ data }: IncidentTrendsChartProps) {
     labels,
     datasets: [
       {
-        label: 'High',
-        data: data.map((d) => d.high),
-        backgroundColor: '#1e3a8a', // blue-900
+        label: 'Urgente',
+        data: data.map((d) => d.urgent),
+        backgroundColor: '#ef4444', // red-500
         borderRadius: 4,
       },
       {
-        label: 'Medium',
-        data: data.map((d) => d.medium),
-        backgroundColor: '#93c5fd', // blue-300
+        label: 'Alta',
+        data: data.map((d) => d.high),
+        backgroundColor: '#f97316', // orange-500
+        borderRadius: 4,
+      },
+      {
+        label: 'Normal',
+        data: data.map((d) => d.normal),
+        backgroundColor: '#eab308', // yellow-500
         borderRadius: 4,
       },
     ],

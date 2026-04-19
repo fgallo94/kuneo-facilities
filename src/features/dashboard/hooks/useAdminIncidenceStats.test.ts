@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { useAdminIncidenceStats } from './useAdminIncidenceStats';
 
-const mockGetDocs = vi.fn();
+const mockOnSnapshot = vi.fn();
 const mockQuery = vi.fn();
 const mockCollection = vi.fn();
 const mockOrderBy = vi.fn();
@@ -14,7 +14,7 @@ vi.mock('firebase/firestore', async () => {
     collection: (...args: unknown[]) => mockCollection(...args),
     query: (...args: unknown[]) => mockQuery(...args),
     orderBy: (...args: unknown[]) => mockOrderBy(...args),
-    getDocs: (...args: unknown[]) => mockGetDocs(...args),
+    onSnapshot: (...args: unknown[]) => mockOnSnapshot(...args),
   };
 });
 
@@ -37,7 +37,7 @@ describe('useAdminIncidenceStats', () => {
     const { result } = renderHook(() => useAdminIncidenceStats({ enabled: false }));
 
     await waitFor(() => expect(result.current.loading).toBe(false));
-    expect(mockGetDocs).not.toHaveBeenCalled();
+    expect(mockOnSnapshot).not.toHaveBeenCalled();
     expect(result.current.stats.total).toBe(0);
   });
 
@@ -84,7 +84,10 @@ describe('useAdminIncidenceStats', () => {
       },
     ];
 
-    mockGetDocs.mockResolvedValue({ docs: fakeDocs });
+    mockOnSnapshot.mockImplementation((_q, onNext) => {
+      onNext({ docs: fakeDocs });
+      return () => {};
+    });
 
     const { result } = renderHook(() => useAdminIncidenceStats());
 
@@ -96,12 +99,16 @@ describe('useAdminIncidenceStats', () => {
     expect(result.current.stats.resolved).toBe(1);
 
     const todayIndex = 6;
-    expect(result.current.chartData[todayIndex].high).toBe(2); // severity 5 + 3
-    expect(result.current.chartData[todayIndex].medium).toBe(2); // severity 1 + 1
+    expect(result.current.chartData[todayIndex].urgent).toBe(1); // severity 5
+    expect(result.current.chartData[todayIndex].high).toBe(1); // severity 3
+    expect(result.current.chartData[todayIndex].normal).toBe(2); // severity 1 + 1
   });
 
   it('maneja errores de firestore', async () => {
-    mockGetDocs.mockRejectedValue(new Error('permission-denied'));
+    mockOnSnapshot.mockImplementation((_q, _onNext, onError) => {
+      onError(new Error('permission-denied'));
+      return () => {};
+    });
 
     const { result } = renderHook(() => useAdminIncidenceStats());
 

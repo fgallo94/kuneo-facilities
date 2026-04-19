@@ -1,10 +1,10 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   collection,
-  getDocs,
   limit,
+  onSnapshot,
   orderBy,
   query,
   where,
@@ -19,51 +19,51 @@ export function useRecentIncidences(
   enabled = true
 ): { incidences: Incidence[]; loading: boolean; error: string | null; refetch: () => void } {
   const [incidences, setIncidences] = useState<Incidence[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(enabled);
   const [error, setError] = useState<string | null>(null);
-
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const db = getClientFirestore();
-      const constraints: QueryConstraint[] = [orderBy('createdAt', 'desc')];
-
-      if (userUid) {
-        constraints.push(where('reportedBy', '==', userUid));
-      }
-
-      if (maxResults > 0) {
-        constraints.push(limit(maxResults));
-      }
-
-      const q = query(collection(db, 'incidences'), ...constraints);
-      const snapshot = await getDocs(q);
-
-      const list = snapshot.docs.map((docSnap) => {
-        const data = docSnap.data();
-        return {
-          id: docSnap.id,
-          ...data,
-        } as Incidence;
-      });
-      setIncidences(list);
-      setError(null);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error desconocido';
-      console.error('[useRecentIncidences]', message, err);
-      setError(message);
-    } finally {
-      setLoading(false);
-    }
-  }, [userUid, maxResults]);
 
   useEffect(() => {
     if (!enabled) {
-      setLoading(false);
       return;
     }
-    fetchData();
-  }, [fetchData, enabled]);
 
-  return { incidences, loading, error, refetch: fetchData };
+    const db = getClientFirestore();
+    const constraints: QueryConstraint[] = [orderBy('createdAt', 'desc')];
+
+    if (userUid) {
+      constraints.push(where('reportedBy', '==', userUid));
+    }
+
+    if (maxResults > 0) {
+      constraints.push(limit(maxResults));
+    }
+
+    const q = query(collection(db, 'incidences'), ...constraints);
+
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const list = snapshot.docs.map((docSnap) => {
+          const data = docSnap.data();
+          return {
+            id: docSnap.id,
+            ...data,
+          } as Incidence;
+        });
+        setIncidences(list);
+        setLoading(false);
+        setError(null);
+      },
+      (err) => {
+        const message = err instanceof Error ? err.message : 'Error desconocido';
+        console.error('[useRecentIncidences]', message, err);
+        setError(message);
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [userUid, maxResults, enabled]);
+
+  return { incidences, loading, error, refetch: () => {} };
 }

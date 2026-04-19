@@ -115,6 +115,7 @@ describe('useCreateIncidence Integration (Emulator)', () => {
     expect(incidenceData.reportedBy).toBe(clientAuth.currentUser!.uid);
     expect(incidenceData.status).toBe('Reportada');
     expect(incidenceData.severity).toBe(3);
+    expect(incidenceData.urgency).toBe('high');
     expect(incidenceData.billTo).toBe('Propietario');
     expect(incidenceData.imageUrls).toEqual([]);
 
