@@ -126,7 +126,7 @@ export default function DashboardPage() {
                     Incident Trends
                   </h2>
                   <p className="text-xs text-slate-500">
-                    Weekly volume by priority level
+                    Últimos 7 días por nivel de prioridad
                   </p>
                 </div>
               </div>

@@ -1,11 +1,14 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { createUserSchema } from './schemas/createUserSchema';
+import { onIncidenceCreated } from './triggers/onIncidenceCreated';
 
 // Inicializa la app de admin (idempotente)
 if (admin.apps.length === 0) {
   admin.initializeApp();
 }
+
+export { onIncidenceCreated };
 
 export const createUser = functions.https.onCall({ cors: true }, async (request) => {
   // 1. Solo admins pueden crear usuarios

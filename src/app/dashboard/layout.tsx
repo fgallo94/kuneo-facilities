@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { DashboardHeader } from './components/DashboardHeader';
 
 const userNavItems = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -163,6 +164,9 @@ export default function DashboardLayout({
 
       {/* Main Content */}
       <main className="flex-1 overflow-auto pb-20 md:pb-0">
+        <div className="border-b border-slate-200 bg-white p-4 md:p-6">
+          <DashboardHeader />
+        </div>
         {children}
       </main>
 

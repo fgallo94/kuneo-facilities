@@ -55,6 +55,7 @@ export function useCreateIncidence() {
         imageUrls: [],
         status: 'Reportada',
         severity,
+        urgency: payload.urgency,
         billTo: 'Propietario',
         createdAt: serverTimestamp(),
       });

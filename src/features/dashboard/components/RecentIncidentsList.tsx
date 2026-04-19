@@ -4,52 +4,39 @@ import { MapPin } from 'lucide-react';
 import { formatRelativeTime } from '@/lib/formatRelativeTime';
 import type { Incidence, Property } from '@/types';
 
-const STATUS_STYLES: Record<
-  Incidence['status'],
-  { bg: string; text: string; border: string; label: string }
-> = {
-  Reportada: {
-    bg: 'bg-slate-100',
-    text: 'text-slate-700',
-    border: 'border-slate-200',
-    label: 'Reportada',
-  },
-  'En reparación': {
-    bg: 'bg-blue-100',
-    text: 'text-blue-700',
-    border: 'border-blue-200',
-    label: 'En reparación',
-  },
-  Reparado: {
-    bg: 'bg-green-100',
-    text: 'text-green-700',
-    border: 'border-green-200',
-    label: 'Reparado',
-  },
-  'A falta de presupuesto': {
-    bg: 'bg-orange-100',
-    text: 'text-orange-700',
-    border: 'border-orange-200',
-    label: 'A falta de presupuesto',
-  },
-  Presupuestado: {
-    bg: 'bg-amber-100',
-    text: 'text-amber-700',
-    border: 'border-amber-200',
-    label: 'Presupuestado',
-  },
-  'Falta de material': {
-    bg: 'bg-purple-100',
-    text: 'text-purple-700',
-    border: 'border-purple-200',
-    label: 'Falta de material',
-  },
-  'A facturar': {
-    bg: 'bg-cyan-100',
-    text: 'text-cyan-700',
-    border: 'border-cyan-200',
-    label: 'A facturar',
-  },
+function getPriorityStyle(severity: number) {
+  if (severity >= 5) {
+    return {
+      bg: 'bg-red-100',
+      text: 'text-red-700',
+      border: 'border-red-200',
+      label: 'Urgente',
+    };
+  }
+  if (severity >= 3) {
+    return {
+      bg: 'bg-orange-100',
+      text: 'text-orange-700',
+      border: 'border-orange-200',
+      label: 'Alta',
+    };
+  }
+  return {
+    bg: 'bg-yellow-100',
+    text: 'text-yellow-700',
+    border: 'border-yellow-200',
+    label: 'Normal',
+  };
+}
+
+const STATUS_LABELS: Record<Incidence['status'], string> = {
+  Reportada: 'Reportada',
+  'En reparación': 'En reparación',
+  Reparado: 'Reparado',
+  'A falta de presupuesto': 'A falta de presupuesto',
+  Presupuestado: 'Presupuestado',
+  'Falta de material': 'Falta de material',
+  'A facturar': 'A facturar',
 };
 
 const CATEGORY_LABELS: Record<Incidence['category'], string> = {
@@ -91,12 +78,8 @@ export function RecentIncidentsList({
     <div className="mt-4 space-y-3">
       {incidences.map((inc) => {
         const property = propertyMap.get(inc.propertyId);
-        const statusStyle = STATUS_STYLES[inc.status] ?? {
-          bg: 'bg-gray-100',
-          text: 'text-gray-700',
-          border: 'border-gray-200',
-          label: inc.status,
-        };
+        const priorityStyle = getPriorityStyle(inc.severity);
+        const statusLabel = STATUS_LABELS[inc.status] ?? inc.status;
         const timeAgo = inc.createdAt ? formatRelativeTime(inc.createdAt) : '';
 
         return (
@@ -111,15 +94,17 @@ export function RecentIncidentsList({
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
                 <span
-                  className={`inline-flex rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${statusStyle.bg} ${statusStyle.text} ${statusStyle.border}`}
+                  className={`inline-flex rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${priorityStyle.bg} ${priorityStyle.text} ${priorityStyle.border}`}
                 >
-                  {statusStyle.label}
+                  {priorityStyle.label}
                 </span>
                 <p className="truncate text-sm font-semibold text-slate-900">
                   {inc.title}
                 </p>
               </div>
               <p className="mt-0.5 text-xs text-slate-500">
+                {statusLabel}
+                {' • '}
                 {property?.name ?? 'Propiedad desconocida'}
                 {timeAgo ? ` • ${timeAgo}` : ''}
               </p>

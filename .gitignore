@@ -79,6 +79,9 @@ desktop.ini
 *.tsbuildinfo
 next-env.d.ts
 
+# Firebase Messaging Service Worker (generado automáticamente desde .env.local)
+public/firebase-messaging-sw.js
+
 # Vercel
 .vercel
 

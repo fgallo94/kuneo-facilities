@@ -55,11 +55,13 @@ describe('RecentIncidentsList', () => {
 
     expect(screen.getByText('Fuga en baño')).toBeInTheDocument();
     expect(screen.getByText((content) => content.includes('Casa azul'))).toBeInTheDocument();
-    expect(screen.getByText('Reportada')).toBeInTheDocument();
+    expect(screen.getByText('Normal')).toBeInTheDocument();
+    expect(screen.getByText((content) => content.includes('Reportada'))).toBeInTheDocument();
 
     expect(screen.getByText('Luz parpadeante')).toBeInTheDocument();
     expect(screen.getByText((content) => content.includes('Piso 4B'))).toBeInTheDocument();
-    expect(screen.getByText('En reparación')).toBeInTheDocument();
+    expect(screen.getByText('Alta')).toBeInTheDocument();
+    expect(screen.getByText((content) => content.includes('En reparación'))).toBeInTheDocument();
 
     // Tipo de categoría
     expect(screen.getByText('Plomería')).toBeInTheDocument();

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   collection,
-  getDocs,
+  onSnapshot,
   orderBy,
   query,
   Timestamp,
@@ -15,8 +15,9 @@ const DAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
 export interface DailyTrend {
   label: string;
+  urgent: number;
   high: number;
-  medium: number;
+  normal: number;
 }
 
 export interface AdminStats {
@@ -43,7 +44,7 @@ function getLast7Days(): DailyTrend[] {
     const d = new Date();
     d.setDate(d.getDate() - i);
     d.setHours(0, 0, 0, 0);
-    result.push({ label: DAYS[d.getDay()], high: 0, medium: 0 });
+    result.push({ label: DAYS[d.getDay()], urgent: 0, high: 0, normal: 0 });
   }
   return result;
 }
@@ -64,16 +65,12 @@ export function useAdminIncidenceStats(options?: UseAdminIncidenceStatsOptions):
   useEffect(() => {
     if (options?.enabled === false) return;
 
-    let cancelled = false;
+    const db = getClientFirestore();
+    const q = query(collection(db, 'incidences'), orderBy('createdAt', 'desc'));
 
-    const fetchData = async () => {
-      try {
-        const db = getClientFirestore();
-        const q = query(collection(db, 'incidences'), orderBy('createdAt', 'desc'));
-        const snapshot = await getDocs(q);
-
-        if (cancelled) return;
-
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
         const list = snapshot.docs.map((docSnap) => {
           const data = docSnap.data();
           return {
@@ -84,18 +81,15 @@ export function useAdminIncidenceStats(options?: UseAdminIncidenceStatsOptions):
         setIncidences(list);
         setLoading(false);
         setError(null);
-      } catch (err) {
-        if (cancelled) return;
+      },
+      (err) => {
         const message = err instanceof Error ? err.message : 'Error desconocido';
         setError(message);
         setLoading(false);
       }
-    };
+    );
 
-    fetchData();
-    return () => {
-      cancelled = true;
-    };
+    return () => unsubscribe();
   }, [options?.enabled]);
 
   const { stats, chartData } = useMemo(() => {
@@ -128,10 +122,12 @@ export function useAdminIncidenceStats(options?: UseAdminIncidenceStatsOptions):
         const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
         if (diffDays >= 0 && diffDays < 7) {
           const dayIndex = 6 - diffDays;
-          if (inc.severity >= 3) {
+          if (inc.severity >= 5) {
+            chartData[dayIndex].urgent += 1;
+          } else if (inc.severity >= 3) {
             chartData[dayIndex].high += 1;
           } else {
-            chartData[dayIndex].medium += 1;
+            chartData[dayIndex].normal += 1;
           }
         }
       }

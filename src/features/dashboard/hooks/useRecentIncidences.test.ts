@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook, waitFor, act } from '@testing-library/react';
+import { renderHook, waitFor } from '@testing-library/react';
 import { useRecentIncidences } from './useRecentIncidences';
 
-const mockGetDocs = vi.fn();
+const mockOnSnapshot = vi.fn();
 const mockQuery = vi.fn();
 const mockCollection = vi.fn();
 const mockOrderBy = vi.fn();
@@ -18,7 +18,7 @@ vi.mock('firebase/firestore', async () => {
     orderBy: (...args: unknown[]) => mockOrderBy(...args),
     where: (...args: unknown[]) => mockWhere(...args),
     limit: (...args: unknown[]) => mockLimit(...args),
-    getDocs: (...args: unknown[]) => mockGetDocs(...args),
+    onSnapshot: (...args: unknown[]) => mockOnSnapshot(...args),
   };
 });
 
@@ -47,7 +47,10 @@ describe('useRecentIncidences', () => {
       },
     ];
 
-    mockGetDocs.mockResolvedValue({ docs: fakeDocs });
+    mockOnSnapshot.mockImplementation((_q, onNext) => {
+      onNext({ docs: fakeDocs });
+      return () => {};
+    });
 
     const { result } = renderHook(() => useRecentIncidences(undefined, 5));
 
@@ -66,7 +69,10 @@ describe('useRecentIncidences', () => {
       },
     ];
 
-    mockGetDocs.mockResolvedValue({ docs: fakeDocs });
+    mockOnSnapshot.mockImplementation((_q, onNext) => {
+      onNext({ docs: fakeDocs });
+      return () => {};
+    });
 
     const { result } = renderHook(() => useRecentIncidences('user_123', 10));
 
@@ -77,7 +83,10 @@ describe('useRecentIncidences', () => {
   });
 
   it('maneja errores de firestore', async () => {
-    mockGetDocs.mockRejectedValue(new Error('network-error'))
+    mockOnSnapshot.mockImplementation((_q, _onNext, onError) => {
+      onError(new Error('network-error'));
+      return () => {};
+    });
 
     const { result } = renderHook(() => useRecentIncidences());
 
@@ -85,21 +94,16 @@ describe('useRecentIncidences', () => {
     expect(result.current.error).toBe('network-error');
   });
 
-  it('refetch refresca los datos', async () => {
-    mockGetDocs.mockResolvedValue({ docs: [] });
+  it('refetch no-op (compatibilidad API)', async () => {
+    mockOnSnapshot.mockImplementation((_q, onNext) => {
+      onNext({ docs: [] });
+      return () => {};
+    });
 
     const { result } = renderHook(() => useRecentIncidences());
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    const newDocs = [
-      { id: 'inc_1', data: () => ({ title: 'Fuga', status: 'Reportada', createdAt: { seconds: 1, nanoseconds: 0 } }) },
-    ];
-    mockGetDocs.mockResolvedValue({ docs: newDocs });
-
-    await act(async () => {
-      await result.current.refetch();
-    });
-
-    await waitFor(() => expect(result.current.incidences).toHaveLength(1));
+    // refetch existe pero no hace nada en modo onSnapshot
+    expect(() => result.current.refetch()).not.toThrow();
   });
 });

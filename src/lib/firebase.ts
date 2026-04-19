@@ -3,6 +3,7 @@ import { getAuth, connectAuthEmulator, type Auth } from 'firebase/auth';
 import { getFirestore, connectFirestoreEmulator, type Firestore } from 'firebase/firestore';
 import { getStorage, connectStorageEmulator, type FirebaseStorage } from 'firebase/storage';
 import { getFunctions, connectFunctionsEmulator, type Functions } from 'firebase/functions';
+import { getMessaging, type Messaging } from 'firebase/messaging';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -26,6 +27,7 @@ let auth: Auth | undefined;
 let db: Firestore | undefined;
 let storage: FirebaseStorage | undefined;
 let functionsInstance: Functions | undefined;
+let messaging: Messaging | undefined;
 
 if (typeof window !== 'undefined') {
   const existingDefaultApp = getApps().find((a) => a.name === '[DEFAULT]');
@@ -110,6 +112,20 @@ export function getClientFunctions(): Functions {
   return functionsInstance;
 }
 
+export function getClientMessaging(): Messaging {
+  if (typeof window === 'undefined') {
+    throw new Error('Firebase Messaging no está disponible en el servidor');
+  }
+  if (!messaging) {
+    const currentApp = app ?? getApps().find((a) => a.name === '[DEFAULT]');
+    if (!currentApp) {
+      throw new Error('Firebase App no está inicializada');
+    }
+    messaging = getMessaging(currentApp);
+  }
+  return messaging;
+}
+
 /** Utilidad exclusiva para tests de integración contra el emulador. */
 export function createEmulatorAuth(): Auth {
   const emulatorApp = initializeApp(firebaseConfig, 'emulator-app');
@@ -119,4 +135,4 @@ export function createEmulatorAuth(): Auth {
   return emulatorAuth;
 }
 
-export { auth, db, storage, functionsInstance as functions };
+export { auth, db, storage, functionsInstance as functions, messaging };
