@@ -114,6 +114,8 @@ export function IncidenceDetailModal({
 
   const [editing, setEditing] = useState(false);
   const [commentText, setCommentText] = useState('');
+  const [showFullHistory, setShowFullHistory] = useState(false);
+  const [showAllComments, setShowAllComments] = useState(false);
 
   const userMap = useMemo(() => new Map(users.map((u) => [u.uid, u])), [users]);
   const installationMap = useMemo(
@@ -133,13 +135,19 @@ export function IncidenceDetailModal({
   // Close on Escape
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
-      if (e.key === 'Escape' && !editing) {
-        onClose();
+      if (e.key === 'Escape') {
+        if (showFullHistory) {
+          setShowFullHistory(false);
+        } else if (showAllComments) {
+          setShowAllComments(false);
+        } else if (!editing) {
+          onClose();
+        }
       }
     }
     document.addEventListener('keydown', handleKey);
     return () => document.removeEventListener('keydown', handleKey);
-  }, [onClose, editing]);
+  }, [onClose, editing, showFullHistory, showAllComments]);
 
   const handleSubmitComment = async () => {
     if (!commentText.trim() || addingComment) return;
@@ -238,12 +246,16 @@ export function IncidenceDetailModal({
         },
       ];
 
+  const reversedTimeline = [...timeline].reverse();
+  const recentTimeline = reversedTimeline.slice(0, 3);
+  const recentComments = comments.slice(-2);
+
   return (
     <>
       <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4 pt-10 md:items-center md:pt-0">
         <div className="w-full max-w-3xl overflow-hidden rounded-xl bg-white shadow-xl">
           {/* Header */}
-          <div className="bg-blue-900 px-6 py-5">
+          <div className="bg-blue-900 px-5 py-3">
             <div className="flex items-start justify-between gap-4">
               <div className="flex flex-wrap items-center gap-2">
                 <span
@@ -274,7 +286,7 @@ export function IncidenceDetailModal({
           </div>
 
           {/* Body */}
-          <div className="bg-slate-50 px-6 py-5">
+          <div className="bg-slate-50 px-5 py-3">
             {(incidenceError || historyError || commentsError) && (
               <div className="mb-4 rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">
                 <p className="font-medium">Error al cargar la incidencia</p>
@@ -283,14 +295,14 @@ export function IncidenceDetailModal({
                 </p>
               </div>
             )}
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-3 md:grid-cols-3">
               {/* Description */}
-              <div className="rounded-xl border border-slate-200 bg-white p-4 md:col-span-2">
+              <div className="rounded-xl border border-slate-200 bg-white p-3 md:col-span-2">
                 <h3 className="text-sm font-semibold text-slate-900">Descripción</h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                <p className="mt-1.5 text-sm leading-relaxed text-slate-600">
                   {incidence.description || 'Sin descripción'}
                 </p>
-                <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-500">
+                <div className="mt-2 flex flex-wrap gap-2 text-xs text-slate-500">
                   <span className="rounded-md bg-slate-100 px-2 py-1">
                     Categoría: {CATEGORY_LABELS[incidence.category] ?? incidence.category}
                   </span>
@@ -304,11 +316,11 @@ export function IncidenceDetailModal({
               </div>
 
               {/* Reported By */}
-              <div className="rounded-xl border border-slate-200 bg-white p-4">
+              <div className="rounded-xl border border-slate-200 bg-white p-3">
                 <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Reportado por
                 </h3>
-                <div className="mt-3 flex items-center gap-3">
+                <div className="mt-2 flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-900 text-xs font-bold text-white">
                     {reporterInitials}
                   </div>
@@ -320,14 +332,14 @@ export function IncidenceDetailModal({
               </div>
             </div>
 
-            <div className="mt-4 grid gap-4 md:grid-cols-3">
+            <div className="mt-3 grid gap-3 md:grid-cols-3">
               {/* Visual Evidence */}
-              <div className="rounded-xl border border-slate-200 bg-white p-4 md:col-span-2">
+              <div className="rounded-xl border border-slate-200 bg-white p-3 md:col-span-2">
                 <h3 className="text-sm font-semibold text-slate-900">Evidencia visual</h3>
                 {incidence.imageUrls.length === 0 ? (
-                  <p className="mt-3 text-sm text-slate-400">No hay imágenes adjuntas</p>
+                  <p className="mt-2 text-sm text-slate-400">No hay imágenes adjuntas</p>
                 ) : (
-                  <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
                     {incidence.imageUrls.map((url, idx) => (
                       <a
                         key={idx}
@@ -350,21 +362,21 @@ export function IncidenceDetailModal({
               </div>
 
               {/* Activity History */}
-              <div className="rounded-xl border border-slate-200 bg-white p-4">
+              <div className="rounded-xl border border-slate-200 bg-white p-3">
                 <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Historial de actividad
                 </h3>
                 {historyLoading ? (
-                  <div className="mt-3 flex items-center justify-center py-6">
+                  <div className="mt-2 flex items-center justify-center py-4">
                     <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-blue-900" />
                   </div>
-                ) : timeline.length === 0 ? (
-                  <p className="mt-3 text-sm text-slate-400">Sin historial</p>
+                ) : reversedTimeline.length === 0 ? (
+                  <p className="mt-2 text-sm text-slate-400">Sin historial</p>
                 ) : (
-                  <div className="relative mt-3 pl-4">
+                  <div className="relative mt-2 pl-4">
                     <div className="absolute left-[7px] top-2 bottom-2 w-px bg-slate-200" />
-                    <ul className="space-y-4">
-                      {timeline.map((item) => (
+                    <ul className="space-y-3">
+                      {recentTimeline.map((item) => (
                         <li key={item.id} className="relative">
                           <span
                             className={`absolute -left-[9px] top-1 h-2 w-2 rounded-full ring-2 ring-white ${
@@ -381,49 +393,67 @@ export function IncidenceDetailModal({
                         </li>
                       ))}
                     </ul>
+                    {reversedTimeline.length > 3 && (
+                      <button
+                        onClick={() => setShowFullHistory(true)}
+                        className="mt-2 text-xs font-medium text-blue-700 hover:text-blue-800 hover:underline"
+                      >
+                        Ver historial completo
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
             </div>
 
             {/* Comments Section */}
-            <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
+            <div className="mt-3 rounded-xl border border-slate-200 bg-white p-3">
               <h3 className="text-sm font-semibold text-slate-900">Comentarios</h3>
 
               {commentsLoading ? (
-                <div className="mt-3 flex items-center justify-center py-6">
+                <div className="mt-2 flex items-center justify-center py-4">
                   <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-blue-900" />
                 </div>
               ) : comments.length === 0 ? (
-                <p className="mt-3 text-sm text-slate-400">
+                <p className="mt-2 text-sm text-slate-400">
                   No hay comentarios aún. Sé el primero en comentar.
                 </p>
               ) : (
-                <ul className="mt-3 space-y-3">
-                  {comments.map((c) => {
-                    const authorName = c.authorName || 'Usuario';
-                    const createdAt = normalizeTimestamp(c.createdAt);
-                    return (
-                      <li key={c.id} className="rounded-lg border border-slate-100 bg-slate-50 p-3">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-xs font-semibold text-slate-700">
-                            {authorName}
-                          </span>
-                          {createdAt && (
-                            <span className="text-[11px] text-slate-400">
-                              {formatDate(createdAt)} a las {formatTime(createdAt)}
+                <>
+                  <ul className="mt-2 space-y-2">
+                    {recentComments.map((c) => {
+                      const authorName = c.authorName || 'Usuario';
+                      const createdAt = normalizeTimestamp(c.createdAt);
+                      return (
+                        <li key={c.id} className="rounded-lg border border-slate-100 bg-slate-50 p-2.5">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-xs font-semibold text-slate-700">
+                              {authorName}
                             </span>
-                          )}
-                        </div>
-                        <p className="mt-1 text-sm text-slate-700">{c.text}</p>
-                      </li>
-                    );
-                  })}
-                </ul>
+                            {createdAt && (
+                              <span className="text-[11px] text-slate-400">
+                                {formatDate(createdAt)} a las {formatTime(createdAt)}
+                              </span>
+                            )}
+                          </div>
+                          <p className="mt-1 text-sm text-slate-700">{c.text}</p>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  {comments.length > 2 && (
+                    <button
+                      onClick={() => setShowAllComments(true)}
+                      className="mt-2 text-xs font-medium text-blue-700 hover:text-blue-800 hover:underline"
+                    >
+                      Ver más comentarios
+                    </button>
+                  )}
+                </>
               )}
 
               {/* Add Comment */}
-              <div className="mt-3 space-y-2">
+              <div className="mt-2 space-y-2">
                 {commentError && (
                   <div className="rounded-md bg-red-50 px-3 py-2 text-xs text-red-700">
                     {commentError}
@@ -466,7 +496,7 @@ export function IncidenceDetailModal({
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between border-t border-slate-200 bg-white px-6 py-4">
+          <div className="flex items-center justify-between border-t border-slate-200 bg-white px-5 py-3">
             <button
               onClick={onClose}
               className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
@@ -486,6 +516,114 @@ export function IncidenceDetailModal({
           </div>
         </div>
       </div>
+
+      {/* Full History Modal */}
+      {showFullHistory && (
+        <div
+          className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-black/50 p-4 pt-10 md:items-center md:pt-0"
+          onClick={() => setShowFullHistory(false)}
+        >
+          <div
+            className="w-full max-w-lg overflow-hidden rounded-xl bg-white shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3">
+              <h3 className="text-lg font-semibold text-slate-900">Historial completo</h3>
+              <button
+                onClick={() => setShowFullHistory(false)}
+                className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                aria-label="Cerrar"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="max-h-[60vh] overflow-y-auto px-5 py-3">
+              <div className="relative pl-4">
+                <div className="absolute left-[7px] top-2 bottom-2 w-px bg-slate-200" />
+                <ul className="space-y-3">
+                  {reversedTimeline.map((item) => (
+                    <li key={item.id} className="relative">
+                      <span
+                        className={`absolute -left-[9px] top-1 h-2 w-2 rounded-full ring-2 ring-white ${
+                          item.isInitial ? 'bg-blue-600' : 'bg-slate-400'
+                        }`}
+                      />
+                      <p className="text-sm font-medium text-slate-800">{item.text}</p>
+                      {item.subtitle && (
+                        <p className="mt-0.5 text-xs text-slate-600">{item.subtitle}</p>
+                      )}
+                      {item.detail && (
+                        <p className="mt-0.5 text-[11px] text-slate-500">{item.detail}</p>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+            <div className="flex justify-end border-t border-slate-200 bg-white px-5 py-3">
+              <button
+                onClick={() => setShowFullHistory(false)}
+                className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* All Comments Modal */}
+      {showAllComments && (
+        <div
+          className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-black/50 p-4 pt-10 md:items-center md:pt-0"
+          onClick={() => setShowAllComments(false)}
+        >
+          <div
+            className="w-full max-w-lg overflow-hidden rounded-xl bg-white shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3">
+              <h3 className="text-lg font-semibold text-slate-900">Todos los comentarios</h3>
+              <button
+                onClick={() => setShowAllComments(false)}
+                className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                aria-label="Cerrar"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="max-h-[60vh] overflow-y-auto px-5 py-3">
+              <ul className="space-y-2">
+                {comments.map((c) => {
+                  const authorName = c.authorName || 'Usuario';
+                  const createdAt = normalizeTimestamp(c.createdAt);
+                  return (
+                    <li key={c.id} className="rounded-lg border border-slate-100 bg-slate-50 p-2.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs font-semibold text-slate-700">{authorName}</span>
+                        {createdAt && (
+                          <span className="text-[11px] text-slate-400">
+                            {formatDate(createdAt)} a las {formatTime(createdAt)}
+                          </span>
+                        )}
+                      </div>
+                      <p className="mt-1 text-sm text-slate-700">{c.text}</p>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+            <div className="flex justify-end border-t border-slate-200 bg-white px-5 py-3">
+              <button
+                onClick={() => setShowAllComments(false)}
+                className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Nested Edit Modal */}
       {editing && isAdmin && (

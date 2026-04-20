@@ -43,9 +43,9 @@ export default function IncidencesKanbanPage() {
     <div className="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8">
       <div className="w-full space-y-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Active Incidents</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Incidencias activas</h1>
           <p className="text-sm text-slate-500">
-            Real-time status tracking across all properties.
+            Seguimiento de estado en tiempo real en todas las propiedades.
           </p>
         </div>
 

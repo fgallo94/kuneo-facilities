@@ -1,6 +1,7 @@
 'use client';
 
-import { MapPin } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
 import { formatRelativeTime } from '@/lib/formatRelativeTime';
 import type { Incidence, Property } from '@/types';
 
@@ -49,6 +50,8 @@ const CATEGORY_LABELS: Record<Incidence['category'], string> = {
   other: 'Otros',
 };
 
+const PAGE_SIZE = 5;
+
 interface RecentIncidentsListProps {
   incidences: Incidence[];
   properties: Property[];
@@ -62,7 +65,18 @@ export function RecentIncidentsList({
   loading = false,
   onSelect,
 }: RecentIncidentsListProps) {
+  const [currentPage, setCurrentPage] = useState(1);
   const propertyMap = new Map(properties.map((p) => [p.id, p]));
+
+  const totalPages = Math.ceil(incidences.length / PAGE_SIZE);
+  const paginatedIncidences = incidences.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [incidences.length]);
 
   if (loading) {
     return <p className="py-6 text-sm text-slate-500">Cargando incidencias...</p>;
@@ -78,7 +92,7 @@ export function RecentIncidentsList({
 
   return (
     <div className="mt-4 space-y-3">
-      {incidences.map((inc) => {
+      {paginatedIncidences.map((inc) => {
         const property = propertyMap.get(inc.propertyId);
         const priorityStyle = getPriorityStyle(inc.severity);
         const statusLabel = STATUS_LABELS[inc.status] ?? inc.status;
@@ -124,6 +138,30 @@ export function RecentIncidentsList({
           </div>
         );
       })}
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between pt-2">
+          <button
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Anterior
+          </button>
+          <span className="text-sm text-slate-600">
+            Página {currentPage} de {totalPages}
+          </span>
+          <button
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Siguiente
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

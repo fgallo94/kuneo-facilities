@@ -11,7 +11,7 @@ import {
 import { getClientFirestore } from '@/lib/firebase';
 import type { Incidence } from '@/types';
 
-const DAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+const DAYS = ['DOM', 'LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB'];
 
 export interface DailyTrend {
   label: string;
@@ -110,7 +110,7 @@ export function useAdminIncidenceStats(options?: UseAdminIncidenceStatsOptions):
         stats.pendingReview += 1;
       } else if (inc.status === 'En reparación') {
         stats.inProgress += 1;
-      } else if (inc.status === 'Reparado') {
+      } else if (inc.status === 'Reparado' || inc.status === 'A facturar') {
         stats.resolved += 1;
       }
 

@@ -18,12 +18,12 @@ import { IncidenceDetailProvider, useIncidenceDetailContext } from '@/features/i
 import { IncidenceDetailModal } from '@/features/incidences/components/IncidenceDetailModal';
 
 const userNavItems = [
-  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { label: 'Panel', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Incidencias', href: '/dashboard/incidences/new', icon: FileText },
 ];
 
 const adminNavItems = [
-  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { label: 'Panel', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Incidencias', href: '/dashboard/incidences', icon: FileText },
   { label: 'Admin', href: '/dashboard/admin', icon: Shield },
 ];
@@ -69,14 +69,14 @@ function DashboardLayoutInner({
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50 md:flex-row">
+    <div className="flex h-screen flex-col bg-slate-50 md:flex-row">
       {/* Desktop Sidebar */}
       {isDesktop && (
-        <aside className="sticky top-0 flex h-screen w-64 flex-col border-r border-slate-200 bg-white">
+        <aside className="sticky top-0 flex h-full w-64 flex-col border-r border-slate-200 bg-white">
           <div className="px-6 py-6">
             <div className="text-lg font-bold text-blue-900">Kuneo</div>
             <div className="text-xs font-medium uppercase tracking-wide text-slate-400">
-              Property Admin
+              Admin de propiedad
             </div>
           </div>
 
@@ -120,7 +120,7 @@ function DashboardLayoutInner({
           <button
             onClick={() => setMobileMenuOpen((v) => !v)}
             className="rounded-md p-2 text-slate-600 hover:bg-slate-100"
-            aria-label="Toggle menu"
+            aria-label="Alternar menú"
           >
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -165,11 +165,13 @@ function DashboardLayoutInner({
       )}
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto pb-20 md:pb-0">
-        <div className="border-b border-slate-200 bg-white p-4 md:p-6">
+      <main className="flex flex-1 flex-col overflow-hidden pb-20 md:pb-0">
+        <div className="shrink-0 border-b border-slate-200 bg-white p-4 md:p-6">
           <DashboardHeader />
         </div>
-        {children}
+        <div className="flex-1 overflow-auto">
+          {children}
+        </div>
       </main>
       <GlobalDetailModal />
 
