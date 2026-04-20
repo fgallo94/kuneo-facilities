@@ -29,7 +29,7 @@ export default function DashboardPage() {
     incidences: recentIncidences,
     loading: recentLoading,
     error: recentError,
-  } = useRecentIncidences(isAdmin ? undefined : user?.uid, 10, !authLoading && !!user);
+  } = useRecentIncidences(isAdmin ? undefined : user?.uid, 0, !authLoading && !!user);
 
   const { properties, loading: propertiesLoading } = useProperties();
 
@@ -50,28 +50,28 @@ export default function DashboardPage() {
   const kpiCards = isAdmin
     ? [
         {
-          label: 'Total Incidents',
+          label: 'Total incidencias',
           value: stats.total,
           icon: FileText,
           color: 'text-slate-900',
           bg: 'bg-white',
         },
         {
-          label: 'Pending Review',
+          label: 'Pendientes de revisión',
           value: stats.pendingReview,
           icon: Clock,
           color: 'text-amber-700',
           bg: 'bg-amber-50',
         },
         {
-          label: 'In Progress',
+          label: 'En progreso',
           value: stats.inProgress,
           icon: Loader2,
           color: 'text-blue-700',
           bg: 'bg-blue-50',
         },
         {
-          label: 'Resolved',
+          label: 'Resueltas',
           value: stats.resolved,
           icon: CheckCircle2,
           color: 'text-green-700',
@@ -86,7 +86,7 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">
-              {isAdmin ? 'Dashboard Overview' : 'Mis incidencias'}
+              {isAdmin ? 'Vista general' : 'Mis incidencias'}
             </h1>
             <p className="text-sm text-slate-500">
               Bienvenido de nuevo, {user.email}
@@ -125,7 +125,7 @@ export default function DashboardPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <h2 className="text-base font-semibold text-slate-900">
-                    Incident Trends
+                    Tendencias de incidencias
                   </h2>
                   <p className="text-xs text-slate-500">
                     Últimos 7 días por nivel de prioridad
@@ -148,7 +148,7 @@ export default function DashboardPage() {
         {/* Recent Incidents */}
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <h2 className="text-base font-semibold text-slate-900">
-            Recent Incidents
+            Incidencias recientes
           </h2>
           {recentError && (
             <div className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
