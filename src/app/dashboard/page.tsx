@@ -41,8 +41,8 @@ export default function DashboardPage() {
 
   if (authLoading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <p className="text-slate-500">Cargando...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <p className="text-gray-500">Cargando...</p>
       </div>
     );
   }
@@ -53,7 +53,7 @@ export default function DashboardPage() {
           label: 'Total incidencias',
           value: stats.total,
           icon: FileText,
-          color: 'text-slate-900',
+          color: 'text-charcoal',
           bg: 'bg-white',
         },
         {
@@ -67,8 +67,8 @@ export default function DashboardPage() {
           label: 'En progreso',
           value: stats.inProgress,
           icon: Loader2,
-          color: 'text-blue-700',
-          bg: 'bg-blue-50',
+          color: 'text-charcoal',
+          bg: 'bg-brand/10',
         },
         {
           label: 'Resueltas',
@@ -81,14 +81,14 @@ export default function DashboardPage() {
     : [];
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
       <div className="mx-auto max-w-6xl space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">
+            <h1 className="text-2xl font-bold text-charcoal">
               {isAdmin ? 'Vista general' : 'Mis incidencias'}
             </h1>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-gray-500">
               Bienvenido de nuevo, {user.email}
             </p>
           </div>
@@ -101,14 +101,14 @@ export default function DashboardPage() {
               {kpiCards.map((card) => (
                 <div
                   key={card.label}
-                  className={`rounded-xl border border-slate-200 ${card.bg} p-5 shadow-sm transition hover:shadow`}
+                  className={`rounded-xl border border-gray-200 ${card.bg} p-5 shadow-sm transition hover:shadow`}
                 >
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                      <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
                         {card.label}
                       </p>
-                      <p className="mt-1 text-3xl font-bold text-slate-900">
+                      <p className="mt-1 text-3xl font-bold text-charcoal">
                         {statsLoading ? '-' : card.value}
                       </p>
                     </div>
@@ -121,13 +121,13 @@ export default function DashboardPage() {
             </div>
 
             {/* Chart */}
-            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
               <div className="flex items-start justify-between">
                 <div>
-                  <h2 className="text-base font-semibold text-slate-900">
+                  <h2 className="text-base font-semibold text-charcoal">
                     Tendencias de incidencias
                   </h2>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-gray-500">
                     Últimos 7 días por nivel de prioridad
                   </p>
                 </div>
@@ -135,7 +135,7 @@ export default function DashboardPage() {
               <div className="mt-4 h-64">
                 {statsLoading ? (
                   <div className="flex h-full items-center justify-center">
-                    <p className="text-sm text-slate-500">Cargando gráfico...</p>
+                    <p className="text-sm text-gray-500">Cargando gráfico...</p>
                   </div>
                 ) : (
                   <IncidentTrendsChart data={chartData} />
@@ -146,8 +146,8 @@ export default function DashboardPage() {
         )}
 
         {/* Recent Incidents */}
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="text-base font-semibold text-slate-900">
+        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+          <h2 className="text-base font-semibold text-charcoal">
             Incidencias recientes
           </h2>
           {recentError && (

@@ -31,9 +31,9 @@ export function QuickCreateForm({ label, placeholder, onSubmit }: QuickCreateFor
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex items-center gap-2 rounded-lg border border-dashed border-slate-300 bg-slate-50 px-3 py-2"
+      className="flex items-center gap-2 rounded-lg border border-dashed border-gray-300 bg-gray-50 px-3 py-2"
     >
-      <Plus className="h-4 w-4 text-slate-400" />
+      <Plus className="h-4 w-4 text-gray-400" />
       <Input
         placeholder={placeholder || label}
         value={value}

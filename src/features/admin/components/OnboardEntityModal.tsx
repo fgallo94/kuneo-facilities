@@ -59,14 +59,14 @@ function SingleImageUploader({
         <div
           onDragOver={(e) => e.preventDefault()}
           onDrop={onDrop}
-          className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 p-6 transition-colors hover:border-blue-900 hover:bg-blue-50"
+          className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-6 transition-colors hover:border-brand hover:bg-brand/10"
           onClick={() => fileInputRef.current?.click()}
         >
-          <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 text-blue-900">
+          <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-brand/15 text-charcoal">
             <Upload className="h-5 w-5" />
           </div>
-          <p className="text-sm font-medium text-slate-900">Subir Fotos</p>
-          <p className="text-xs text-slate-500">Arrastra y suelta fotos aquí</p>
+          <p className="text-sm font-medium text-gray-900">Subir Fotos</p>
+          <p className="text-xs text-gray-500">Arrastra y suelta fotos aquí</p>
           <input
             ref={fileInputRef}
             type="file"
@@ -77,7 +77,7 @@ function SingleImageUploader({
               if (file) handleFile(file);
             }}
           />
-          {isUploading && <p className="mt-2 text-xs text-blue-900">Subiendo...</p>}
+          {isUploading && <p className="mt-2 text-xs text-charcoal">Subiendo...</p>}
         </div>
       ) : (
         <div className="relative aspect-video w-full overflow-hidden rounded-lg">
@@ -86,7 +86,7 @@ function SingleImageUploader({
           <button
             type="button"
             onClick={() => onChange('')}
-            className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-slate-800 text-white shadow hover:bg-slate-700"
+            className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-gray-800 text-white shadow hover:bg-gray-700"
             aria-label="Eliminar imagen"
           >
             <X className="h-3.5 w-3.5" />
@@ -117,7 +117,7 @@ function UserDropdownSelector({
       multiple
       value={selectedIds}
       onChange={handleSelect}
-      className="mt-1 block h-32 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-900 focus:outline-none focus:ring-1 focus:ring-blue-900"
+      className="mt-1 block h-32 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
     >
       {users.map((user) => (
         <option key={user.uid} value={user.uid}>
@@ -174,13 +174,13 @@ export function OnboardEntityModal({
       <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-lg">
         <div className="mb-1 flex items-start justify-between">
           <div>
-            <h3 className="text-xl font-bold text-blue-900">{title}</h3>
-            <p className="mt-1 text-sm text-slate-500">{subtitle}</p>
+            <h3 className="text-xl font-bold text-charcoal">{title}</h3>
+            <p className="mt-1 text-sm text-gray-500">{subtitle}</p>
           </div>
           <button
             type="button"
             onClick={handleClose}
-            className="text-slate-400 hover:text-slate-600"
+            className="text-gray-400 hover:text-gray-600"
             aria-label="Cerrar"
           >
             <X className="h-5 w-5" />
@@ -202,7 +202,7 @@ export function OnboardEntityModal({
 
           <div>
             <Label className="flex items-center gap-1">
-              <MapPin className="h-4 w-4 text-slate-400" />
+              <MapPin className="h-4 w-4 text-gray-400" />
               Dirección Física
             </Label>
             <Input
@@ -214,21 +214,21 @@ export function OnboardEntityModal({
 
           <div>
             <Label className="flex items-center gap-1">
-              <Building2 className="h-4 w-4 text-slate-400" />
+              <Building2 className="h-4 w-4 text-gray-400" />
               Descripción Operacional
             </Label>
             <textarea
               {...register('description')}
               placeholder="Breve resumen de la función principal y parámetros operativos clave..."
               rows={3}
-              className="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-900 focus:outline-none focus:ring-1 focus:ring-blue-900"
+              className="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
             />
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <Label>Personal Asignado</Label>
-              <p className="text-xs text-slate-500">Añade gestores a este sitio. Mantén presionada la tecla Ctrl (o Cmd) para seleccionar varios.</p>
+              <p className="text-xs text-gray-500">Añade gestores a este sitio. Mantén presionada la tecla Ctrl (o Cmd) para seleccionar varios.</p>
               <div className="mt-2">
                 <Controller
                   name="assignedUserIds"

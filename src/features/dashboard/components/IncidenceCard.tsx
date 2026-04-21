@@ -9,7 +9,7 @@ const URGENCY_LABELS: Record<string, string> = {
 };
 
 const URGENCY_COLORS: Record<string, string> = {
-  normal: 'bg-slate-100 text-slate-700 border-slate-200',
+  normal: 'bg-gray-100 text-gray-700 border-gray-200',
   high: 'bg-amber-100 text-amber-700 border-amber-200',
   urgent: 'bg-red-100 text-red-700 border-red-200',
 };
@@ -29,7 +29,7 @@ export function IncidenceCard({ incidence, installation, reporter, onClick }: In
   return (
     <div
       onClick={onClick}
-      className="cursor-pointer rounded-lg border border-slate-200 bg-white p-3 shadow-sm transition hover:shadow-md hover:border-slate-300"
+      className="cursor-pointer rounded-lg border border-gray-200 bg-white p-3 shadow-sm transition hover:shadow-md hover:border-gray-300"
     >
       <div className="flex items-start justify-between gap-2">
         <span
@@ -38,13 +38,13 @@ export function IncidenceCard({ incidence, installation, reporter, onClick }: In
           {URGENCY_LABELS[urgencyLabel]}
         </span>
       </div>
-      <h4 className="mt-2 text-sm font-semibold text-slate-900 line-clamp-2">
+      <h4 className="mt-2 text-sm font-semibold text-charcoal line-clamp-2">
         {incidence.title}
       </h4>
-      <p className="mt-1 text-xs text-slate-500 line-clamp-1">
+      <p className="mt-1 text-xs text-gray-500 line-clamp-1">
         {location || 'Instalación desconocida'}
       </p>
-      <p className="mt-2 text-xs text-slate-400">
+      <p className="mt-2 text-xs text-gray-400">
         {reporterName}
       </p>
     </div>

@@ -31,8 +31,8 @@ export default function IncidencesKanbanPage() {
 
   if (authLoading || !user || !isAdmin) {
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-50">
-        <p className="text-slate-500">Cargando...</p>
+      <div className="flex h-screen items-center justify-center bg-gray-50">
+        <p className="text-gray-500">Cargando...</p>
       </div>
     );
   }
@@ -40,18 +40,18 @@ export default function IncidencesKanbanPage() {
   const loading = incidencesLoading || installationsLoading || usersLoading;
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
       <div className="w-full space-y-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Incidencias activas</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="text-2xl font-bold text-gray-900">Incidencias activas</h1>
+          <p className="text-sm text-gray-500">
             Seguimiento de estado en tiempo real en todas las propiedades.
           </p>
         </div>
 
         {loading ? (
           <div className="flex h-64 items-center justify-center">
-            <p className="text-slate-500">Cargando tablero...</p>
+            <p className="text-gray-500">Cargando tablero...</p>
           </div>
         ) : (
           <IncidenceKanbanBoard

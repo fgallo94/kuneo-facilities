@@ -147,30 +147,30 @@ export function AdminManagementPage() {
 
   const renderBreadcrumb = () => {
     if (view === 'groups') {
-      return <span className="text-sm text-slate-500">Grupos</span>;
+      return <span className="text-sm text-gray-500">Grupos</span>;
     }
     if (view === 'installations' && selectedGroup) {
       return (
-        <button onClick={goBack} className="text-sm text-slate-500 hover:text-blue-900 hover:underline">
+        <button onClick={goBack} className="text-sm text-gray-500 hover:text-brand hover:underline">
           Grupos
         </button>
       );
     }
     if (view === 'properties' && selectedGroup && selectedInstallation) {
       return (
-        <div className="flex items-center gap-1 text-sm text-slate-500">
+        <div className="flex items-center gap-1 text-sm text-gray-500">
           <button
             onClick={() => {
               setView('groups');
               setSelectedGroup(null);
               setSelectedInstallation(null);
             }}
-            className="hover:text-blue-900 hover:underline"
+            className="hover:text-brand hover:underline"
           >
             Grupos
           </button>
           <ChevronRight className="h-4 w-4" />
-          <button onClick={goBack} className="hover:text-blue-900 hover:underline">
+          <button onClick={goBack} className="hover:text-brand hover:underline">
             {selectedGroup.name}
           </button>
         </div>
@@ -197,13 +197,13 @@ export function AdminManagementPage() {
           </div>
           <button
             onClick={() => setOnboardTarget({ level: 'group' })}
-            className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 p-4 text-sm font-medium text-slate-600 transition-colors hover:border-blue-900 hover:bg-blue-50 hover:text-blue-900"
+            className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-4 text-sm font-medium text-gray-600 transition-colors hover:border-brand hover:bg-brand/10 hover:text-brand"
           >
             <Plus className="h-4 w-4" />
             Crear Nuevo Grupo
           </button>
           {groups.length === 0 && (
-            <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-sm text-slate-500">
+            <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-8 text-center text-sm text-gray-500">
               No hay grupos creados aún.
             </div>
           )}
@@ -229,13 +229,13 @@ export function AdminManagementPage() {
           </div>
           <button
             onClick={() => setOnboardTarget({ level: 'installation', parentId: selectedGroup.id })}
-            className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 p-4 text-sm font-medium text-slate-600 transition-colors hover:border-blue-900 hover:bg-blue-50 hover:text-blue-900"
+            className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-4 text-sm font-medium text-gray-600 transition-colors hover:border-brand hover:bg-brand/10 hover:text-charcoal"
           >
             <Plus className="h-4 w-4" />
             Crear Nueva Instalación
           </button>
           {groupInstallations.length === 0 && (
-            <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-sm text-slate-500">
+            <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-8 text-center text-sm text-gray-500">
               No hay instalaciones en este grupo.
             </div>
           )}
@@ -260,13 +260,13 @@ export function AdminManagementPage() {
           </div>
           <button
             onClick={() => setOnboardTarget({ level: 'property', parentId: selectedInstallation.id })}
-            className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 p-4 text-sm font-medium text-slate-600 transition-colors hover:border-blue-900 hover:bg-blue-50 hover:text-blue-900"
+            className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-4 text-sm font-medium text-gray-600 transition-colors hover:border-brand hover:bg-brand/10 hover:text-charcoal"
           >
             <Plus className="h-4 w-4" />
             Crear Nueva Propiedad
           </button>
           {installationProperties.length === 0 && (
-            <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-sm text-slate-500">
+            <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-8 text-center text-sm text-gray-500">
               No hay propiedades en esta instalación.
             </div>
           )}
@@ -304,8 +304,8 @@ export function AdminManagementPage() {
     <div className="mx-auto w-full max-w-7xl p-4 sm:p-6 lg:p-8">
       {/* Header */}
       <div className="mb-6 md:mb-8">
-        <h1 className="text-2xl font-bold text-slate-900 md:text-3xl">Administración</h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <h1 className="text-2xl font-bold text-charcoal md:text-3xl">Administración</h1>
+        <p className="mt-1 text-sm text-gray-500">
           Gestiona tu portfolio arquitectónico y controla el acceso del equipo de administración de propiedades.
         </p>
       </div>
@@ -315,18 +315,18 @@ export function AdminManagementPage() {
         <div className="lg:col-span-3">
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-900">
-                <Building2 className="h-5 w-5 text-blue-900" />
+              <h2 className="flex items-center gap-2 text-lg font-semibold text-charcoal">
+                <Building2 className="h-5 w-5 text-charcoal" />
                 Gestión de Propiedades
               </h2>
               {view !== 'groups' && (
                 <>
-                  <ChevronRight className="h-4 w-4 text-slate-300" />
+                  <ChevronRight className="h-4 w-4 text-gray-300" />
                   {renderBreadcrumb()}
                 </>
               )}
             </div>
-            <span className="text-xs text-slate-500">{activePortfolios} Portafolios Activos</span>
+            <span className="text-xs text-gray-500">{activePortfolios} Portafolios Activos</span>
           </div>
 
           <div className="space-y-4">{renderGrid()}</div>
@@ -349,18 +349,18 @@ export function AdminManagementPage() {
           )}
 
           {/* Quick stats */}
-          <div className="grid grid-cols-3 gap-2 rounded-xl border border-slate-200 bg-white p-4 text-center">
+          <div className="grid grid-cols-3 gap-2 rounded-xl border border-gray-200 bg-white p-4 text-center">
             <div>
-              <p className="text-lg font-bold text-slate-900">{users.length}</p>
-              <p className="text-[10px] font-medium uppercase text-slate-400">Personal Total</p>
+              <p className="text-lg font-bold text-charcoal">{users.length}</p>
+              <p className="text-[10px] font-medium uppercase text-gray-400">Personal Total</p>
             </div>
             <div>
-              <p className="text-lg font-bold text-slate-900">{properties.length}</p>
-              <p className="text-[10px] font-medium uppercase text-slate-400">Unidades Gest.</p>
+              <p className="text-lg font-bold text-charcoal">{properties.length}</p>
+              <p className="text-[10px] font-medium uppercase text-gray-400">Unidades Gest.</p>
             </div>
             <div>
               <p className="text-lg font-bold text-red-600">0</p>
-              <p className="text-[10px] font-medium uppercase text-slate-400">Incid. Abiertas</p>
+              <p className="text-[10px] font-medium uppercase text-gray-400">Incid. Abiertas</p>
             </div>
           </div>
         </aside>

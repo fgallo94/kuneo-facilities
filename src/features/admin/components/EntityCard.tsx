@@ -41,10 +41,10 @@ export function EntityCard({ entity, users, onAssign, onEdit, onClick }: EntityC
   return (
     <div
       onClick={handleCardClick}
-      className="group cursor-pointer overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md"
+      className="group cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md"
     >
       {/* Image */}
-      <div className="relative aspect-[16/10] w-full bg-slate-100">
+      <div className="relative aspect-[16/10] w-full bg-gray-100">
         {entity.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -53,19 +53,19 @@ export function EntityCard({ entity, users, onAssign, onEdit, onClick }: EntityC
             className="h-full w-full object-cover"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-slate-300">
+          <div className="flex h-full w-full items-center justify-center text-gray-300">
             <span className="text-4xl font-light">🏢</span>
           </div>
         )}
-        <span className="absolute right-3 top-3 rounded bg-blue-900/90 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+        <span className="absolute right-3 top-3 rounded bg-charcoal/90 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
           {getEntityLabel(entity)}
         </span>
       </div>
 
       {/* Content */}
       <div className="p-4">
-        <h4 className="truncate text-base font-semibold text-slate-900">{entity.name}</h4>
-        <p className="truncate text-sm text-slate-500">
+        <h4 className="truncate text-base font-semibold text-gray-900">{entity.name}</h4>
+        <p className="truncate text-sm text-gray-500">
           {entity.address || entity.description || 'Sin dirección'}
         </p>
 
@@ -75,7 +75,7 @@ export function EntityCard({ entity, users, onAssign, onEdit, onClick }: EntityC
               {avatars.slice(0, 3).map((user, idx) => (
                 <div
                   key={user.uid + idx}
-                  className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-blue-100 text-[10px] font-bold text-blue-900"
+                  className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-brand/15 text-[10px] font-bold text-charcoal"
                   title={user.displayName || user.email || ''}
                 >
                   {user.displayName?.charAt(0).toUpperCase() ||
@@ -84,7 +84,7 @@ export function EntityCard({ entity, users, onAssign, onEdit, onClick }: EntityC
                 </div>
               ))}
               {remaining > 0 && (
-                <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-slate-100 text-[10px] font-bold text-slate-600">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-gray-100 text-[10px] font-bold text-gray-600">
                   +{remaining}
                 </div>
               )}
@@ -96,7 +96,7 @@ export function EntityCard({ entity, users, onAssign, onEdit, onClick }: EntityC
                 e.stopPropagation();
                 onAssign(entity);
               }}
-              className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-900 text-white hover:bg-blue-800"
+              className="flex h-7 w-7 items-center justify-center rounded-full bg-charcoal text-white hover:bg-charcoal-light"
               aria-label="Asignar usuarios"
             >
               <Plus className="h-3.5 w-3.5" />
@@ -111,7 +111,7 @@ export function EntityCard({ entity, users, onAssign, onEdit, onClick }: EntityC
                   e.stopPropagation();
                   onEdit(entity);
                 }}
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-slate-500 hover:bg-slate-50"
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50"
                 aria-label="Editar"
               >
                 <Pencil className="h-3.5 w-3.5" />

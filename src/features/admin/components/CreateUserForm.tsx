@@ -47,14 +47,14 @@ export function CreateUserForm({
   };
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-          <span className="text-blue-900">+</span> Nuevas Credenciales de Cuenta
+        <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+          <span className="text-charcoal">+</span> Nuevas Credenciales de Cuenta
         </h3>
         <button
           onClick={onClose}
-          className="text-slate-400 hover:text-slate-600"
+          className="text-gray-400 hover:text-gray-600"
           aria-label="Cerrar"
         >
           <X className="h-4 w-4" />
