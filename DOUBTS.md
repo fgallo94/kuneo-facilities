@@ -15,3 +15,14 @@ Actualmente el sistema implementa una distinción básica entre **`admin`** y **
 ---
 
 *Fecha de generación: 2026-04-15*
+
+
+#### Filtro rapido en Kanban por Grupo-propiedad-instalacion.
+#### Notificacion de conformidad del usuario al pasar a reparado
+#### Notificacion en comentario de admin para usuario que reporta la incidencia
+#### En Kanban el Aceptado o Rechazado
+#### Menu Lateral tablero por marca
+#### Buscador de incidencias en menu lateral por resueltas, con filtros de franja de tiempo
+#### Al cambiar de estado a Reparado tiene que permitir agregar evidencias.
+#### Fotos en comentarios de incidencias.
+#### A facturar, datos de incidencia, enviar a contaduria, con monto y concepto.
