@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
 import { formatRelativeTime } from '@/lib/formatRelativeTime';
 import type { Incidence, Property } from '@/types';
@@ -65,18 +65,15 @@ export function RecentIncidentsList({
   loading = false,
   onSelect,
 }: RecentIncidentsListProps) {
-  const [currentPage, setCurrentPage] = useState(1);
+  const [userPage, setUserPage] = useState(1);
   const propertyMap = new Map(properties.map((p) => [p.id, p]));
 
   const totalPages = Math.ceil(incidences.length / PAGE_SIZE);
+  const currentPage = userPage > totalPages ? totalPages : userPage;
   const paginatedIncidences = incidences.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE
   );
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [incidences.length]);
 
   if (loading) {
     return <p className="py-6 text-sm text-gray-500">Cargando incidencias...</p>;
@@ -95,7 +92,10 @@ export function RecentIncidentsList({
       {paginatedIncidences.map((inc) => {
         const property = propertyMap.get(inc.propertyId);
         const priorityStyle = getPriorityStyle(inc.severity);
-        const statusLabel = STATUS_LABELS[inc.status] ?? inc.status;
+        let statusLabel = STATUS_LABELS[inc.status] ?? inc.status;
+        if (inc.status === 'Reparado' && inc.conformityStatus === 'pending') {
+          statusLabel = 'Reparado — Pendiente de conformidad';
+        }
         const timeAgo = inc.createdAt ? formatRelativeTime(inc.createdAt) : '';
 
         return (
@@ -115,6 +115,16 @@ export function RecentIncidentsList({
                 >
                   {priorityStyle.label}
                 </span>
+                {inc.status === 'A facturar' && (
+                  <span className="inline-flex rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-green-800">
+                    Aceptada
+                  </span>
+                )}
+                {inc.status === 'En reparación' && inc.conformityStatus === 'rejected' && (
+                  <span className="inline-flex rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-red-700">
+                    Rechazada
+                  </span>
+                )}
                 <p className="truncate text-sm font-semibold text-charcoal">
                   {inc.title}
                 </p>
@@ -142,7 +152,7 @@ export function RecentIncidentsList({
       {totalPages > 1 && (
         <div className="flex items-center justify-between pt-2">
           <button
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            onClick={() => setUserPage((p) => Math.max(1, p - 1))}
             disabled={currentPage === 1}
             className="inline-flex items-center gap-1 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
           >
@@ -153,7 +163,7 @@ export function RecentIncidentsList({
             Página {currentPage} de {totalPages}
           </span>
           <button
-            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            onClick={() => setUserPage((p) => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
             className="inline-flex items-center gap-1 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
           >

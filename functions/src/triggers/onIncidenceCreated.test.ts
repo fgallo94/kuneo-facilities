@@ -69,7 +69,15 @@ describe('handleIncidenceCreated', () => {
     mocks.mockDoc.mockImplementation((...args: string[]) => ({
       id: 'generated_id',
       path: args.join('/'),
+      get: mocks.mockGet,
+      collection: () => ({ doc: mocks.mockDoc }),
     }));
+    mocks.mockCollection.mockImplementation((path: string) => {
+      if (path === 'users') {
+        return { where: mocks.mockWhere, doc: mocks.mockDoc };
+      }
+      return { doc: mocks.mockDoc };
+    });
   });
 
   it('no procesa si no hay snapshot', async () => {
@@ -83,7 +91,6 @@ describe('handleIncidenceCreated', () => {
       { id: 'admin_2', data: () => ({ fcmTokens: ['token_c'] }), ref: { update: mocks.mockUpdate } },
     ];
 
-    mocks.mockCollection.mockReturnValue({ where: mocks.mockWhere });
     mocks.mockWhere.mockReturnValue({ get: mocks.mockGet });
     mocks.mockGet.mockResolvedValue({ empty: false, docs: fakeAdmins });
     mocks.mockSendEachForMulticast.mockResolvedValue({ failureCount: 0, responses: [] });
@@ -125,7 +132,6 @@ describe('handleIncidenceCreated', () => {
       },
     ];
 
-    mocks.mockCollection.mockReturnValue({ where: mocks.mockWhere });
     mocks.mockWhere.mockReturnValue({ get: mocks.mockGet });
     mocks.mockGet.mockResolvedValue({ empty: false, docs: fakeAdmins });
     mocks.mockBatchCommit.mockResolvedValue(undefined);

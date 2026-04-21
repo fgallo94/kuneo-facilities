@@ -26,10 +26,19 @@ export function IncidenceCard({ incidence, installation, reporter, onClick }: In
   const location = [installation?.name, installation?.address].filter(Boolean).join(' • ');
   const reporterName = reporter?.displayName || reporter?.email || 'Usuario desconocido';
 
+  const isAcceptedBilling = incidence.status === 'A facturar';
+  const isRejectedRepair = incidence.status === 'En reparación' && incidence.conformityStatus === 'rejected';
+
+  const cardBorderClass = isAcceptedBilling
+    ? 'border-green-400 ring-1 ring-green-200'
+    : isRejectedRepair
+    ? 'border-red-400 ring-1 ring-red-200'
+    : 'border-gray-200';
+
   return (
     <div
       onClick={onClick}
-      className="cursor-pointer rounded-lg border border-gray-200 bg-white p-3 shadow-sm transition hover:shadow-md hover:border-gray-300"
+      className={`cursor-pointer rounded-lg border ${cardBorderClass} bg-white p-3 shadow-sm transition hover:shadow-md hover:border-gray-300`}
     >
       <div className="flex items-start justify-between gap-2">
         <span
@@ -37,6 +46,16 @@ export function IncidenceCard({ incidence, installation, reporter, onClick }: In
         >
           {URGENCY_LABELS[urgencyLabel]}
         </span>
+        {isAcceptedBilling && (
+          <span className="inline-flex rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-green-800">
+            Aceptada
+          </span>
+        )}
+        {isRejectedRepair && (
+          <span className="inline-flex rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-red-700">
+            Rechazada
+          </span>
+        )}
       </div>
       <h4 className="mt-2 text-sm font-semibold text-charcoal line-clamp-2">
         {incidence.title}

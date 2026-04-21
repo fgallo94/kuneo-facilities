@@ -1,4 +1,4 @@
-import React from 'react';
+import Image from 'next/image';
 
 interface LogoProps {
   className?: string;
@@ -15,13 +15,14 @@ export function Logo({ className = '', size = 'md' }: LogoProps) {
   const { width, height } = sizeMap[size];
 
   return (
-    <img
+    <Image
       src="/logo-kuneo.png"
       alt="KUNEO BUILDING"
       width={width}
       height={height}
       className={`object-contain ${className}`}
       style={{ width, height }}
+      priority
     />
   );
 }

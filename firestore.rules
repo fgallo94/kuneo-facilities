@@ -52,16 +52,22 @@ service cloud.firestore {
       let after = request.resource.data;
       let before = resource.data;
       let diffKeys = after.diff(before).affectedKeys();
-      // Admin puede modificar status, assignedTo, severity, etc.
-      // y el usuario puede añadir imageUrls.
-      return diffKeys.hasOnly(['imageUrls', 'status', 'severity', 'assignedTo', 'updatedAt'])
-        || diffKeys.hasOnly(['imageUrls']);
+      // Admin puede modificar status, assignedTo, severity, updatedAt e imageUrls
+      return diffKeys.hasOnly(['imageUrls', 'status', 'severity', 'assignedTo', 'updatedAt', 'updatedBy']);
+    }
+
+    function isValidConformityUpdate() {
+      let after = request.resource.data;
+      let before = resource.data;
+      let diffKeys = after.diff(before).affectedKeys();
+      // El reportador puede modificar campos de conformidad cuando status es Reparado
+      return before.status == 'Reparado'
+        && diffKeys.hasOnly(['conformityStatus', 'conformityReason', 'conformityComment', 'conformityImageUrls', 'status', 'updatedAt', 'updatedBy']);
     }
 
     // --- COLECCIONES ---
 
     match /users/{userId} {
-      // Cualquiera puede leer su propio perfil; los admins pueden listar/editar todos.
       allow read: if isOwner(userId) || isAdmin();
       allow create: if isAdmin() && isValidUserWrite(userId);
       allow update: if isAdmin() || (
@@ -94,11 +100,16 @@ service cloud.firestore {
 
       allow create: if isAuthenticated() && isValidIncidenceCreate();
 
-      allow update: if isAdmin() || (
-        isOwner(resource.data.reportedBy)
-        && isValidIncidenceUpdate()
-        && request.resource.data.imageUrls is list
-      );
+      allow update: if isAdmin()
+        || (
+          isOwner(resource.data.reportedBy)
+          && isValidIncidenceUpdate()
+          && request.resource.data.imageUrls is list
+        )
+        || (
+          isOwner(resource.data.reportedBy)
+          && isValidConformityUpdate()
+        );
 
       allow delete: if false;
 
@@ -108,7 +119,7 @@ service cloud.firestore {
           && request.resource.data.keys().hasAll(['changedBy', 'changeType', 'timestamp'])
           && request.resource.data.changedBy == request.auth.uid
           && request.resource.data.changeType is string
-          && request.resource.data.changeType in ['status', 'field', 'comment', 'creation']
+          && request.resource.data.changeType in ['status', 'field', 'comment', 'creation', 'conformity']
           && request.resource.data.timestamp is timestamp
           && (
             request.resource.data.changeType != 'comment'

@@ -17,6 +17,11 @@ export const notificationIncidenceDataSchema = z.object({
   }),
   imageUrls: z.array(z.string()).optional(),
   createdAt: z.any().optional(),
+  // Campos de conformidad
+  conformityStatus: z.enum(['pending', 'accepted', 'rejected']).optional(),
+  conformityReason: z.string().optional(),
+  conformityComment: z.string().optional(),
+  conformityImageUrls: z.array(z.string()).optional(),
 });
 
 export type NotificationIncidenceData = z.infer<typeof notificationIncidenceDataSchema>;
