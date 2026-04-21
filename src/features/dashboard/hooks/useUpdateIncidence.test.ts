@@ -60,7 +60,11 @@ describe('useUpdateIncidence', () => {
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    expect(mockUpdateDoc).toHaveBeenCalledWith('docRef', { status: 'En reparación' });
+    expect(mockUpdateDoc).toHaveBeenCalledWith('docRef', {
+      status: 'En reparación',
+      updatedBy: 'admin_123',
+      updatedAt: expect.anything(),
+    });
     expect(mockSetDoc).toHaveBeenCalledWith('docRef', {
       changedBy: 'admin_123',
       changedByName: 'Usuario',
@@ -94,7 +98,11 @@ describe('useUpdateIncidence', () => {
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    expect(mockUpdateDoc).toHaveBeenCalledWith('docRef', { description: 'desc nueva' });
+    expect(mockUpdateDoc).toHaveBeenCalledWith('docRef', {
+      description: 'desc nueva',
+      updatedBy: 'admin_123',
+      updatedAt: expect.anything(),
+    });
     expect(mockSetDoc).toHaveBeenCalledWith('docRef', {
       changedBy: 'admin_123',
       changedByName: 'Usuario',

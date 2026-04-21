@@ -10,6 +10,7 @@ import {
 import type { Incidence, Installation, User } from '@/types';
 import { INCIDENCE_STATUSES } from '@/types';
 import { IncidenceCard } from './IncidenceCard';
+import { RepairEvidenceDialog } from './RepairEvidenceDialog';
 import { useIncidenceDetailContext } from '@/features/incidences/context/IncidenceDetailContext';
 
 interface IncidenceKanbanBoardProps {
@@ -28,6 +29,10 @@ export function IncidenceKanbanBoard({
 }: IncidenceKanbanBoardProps) {
   const { openDetail } = useIncidenceDetailContext();
   const [localIncidences, setLocalIncidences] = useState<Incidence[]>(incidences);
+  const [repairDialog, setRepairDialog] = useState<{
+    open: boolean;
+    incidence: Incidence | null;
+  }>({ open: false, incidence: null });
 
   const installationMap = useMemo(
     () => new Map(installations.map((i) => [i.id, i])),
@@ -63,6 +68,12 @@ export function IncidenceKanbanBoard({
     const incidence = columns.get(sourceStatus)?.[result.source.index];
     if (!incidence) return;
 
+    // Interceptar cambio a Reparado: mostrar diálogo de evidencia
+    if (sourceStatus === 'En reparación' && destStatus === 'Reparado') {
+      setRepairDialog({ open: true, incidence });
+      return;
+    }
+
     // Optimistic update para feedback visual inmediato
     setLocalIncidences((prev) =>
       prev.map((inc) =>
@@ -75,6 +86,31 @@ export function IncidenceKanbanBoard({
     onUpdate(incidence, { status: destStatus as Incidence['status'] });
   };
 
+  const handleConfirmRepair = (payload: {
+    status: 'Reparado';
+    repairEvidenceComment?: string;
+    repairEvidenceImageUrls?: string[];
+  }) => {
+    const incidence = repairDialog.incidence;
+    if (!incidence) return;
+
+    const fullPayload = {
+      ...payload,
+      conformityStatus: 'pending' as const,
+    };
+
+    setLocalIncidences((prev) =>
+      prev.map((inc) =>
+        inc.id === incidence.id
+          ? { ...inc, ...fullPayload }
+          : inc
+      )
+    );
+
+    onUpdate(incidence, fullPayload);
+    setRepairDialog({ open: false, incidence: null });
+  };
+
   return (
     <>
       <DragDropContext onDragEnd={handleDragEnd}>
@@ -84,7 +120,13 @@ export function IncidenceKanbanBoard({
             return (
               <div
                 key={status}
-                className="flex min-w-[12rem] flex-1 flex-col rounded-xl border border-gray-200 bg-gray-50"
+                className={`flex min-w-[12rem] flex-1 flex-col rounded-xl border ${
+                  status === 'A facturar'
+                    ? 'border-green-300 bg-green-50'
+                    : status === 'Reparado'
+                    ? 'border-amber-300 bg-amber-50'
+                    : 'border-gray-200 bg-gray-50'
+                }`}
               >
                 <div className="flex items-center justify-between px-3 py-2">
                   <h3 className="text-sm font-semibold text-charcoal">{status}</h3>
@@ -137,7 +179,12 @@ export function IncidenceKanbanBoard({
         </div>
       </DragDropContext>
 
-
+      <RepairEvidenceDialog
+        incidence={repairDialog.incidence}
+        open={repairDialog.open}
+        onClose={() => setRepairDialog({ open: false, incidence: null })}
+        onConfirm={handleConfirmRepair}
+      />
     </>
   );
 }

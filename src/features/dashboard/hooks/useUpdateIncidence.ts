@@ -18,6 +18,12 @@ export interface IncidenceUpdatePayload {
   severity?: number;
   status?: IncidenceStatus;
   billTo?: 'Propietario' | 'Explotador';
+  conformityStatus?: 'pending' | 'accepted' | 'rejected';
+  conformityReason?: string;
+  conformityComment?: string;
+  conformityImageUrls?: string[];
+  repairEvidenceImageUrls?: string[];
+  repairEvidenceComment?: string;
 }
 
 export function useUpdateIncidence() {
@@ -40,7 +46,10 @@ export function useUpdateIncidence() {
         throw new Error('Usuario no autenticado');
       }
 
-      const updateData: Record<string, unknown> = {};
+      const updateData: Record<string, unknown> = {
+        updatedBy: user.uid,
+        updatedAt: serverTimestamp(),
+      };
       const historyEntries: Omit<IncidenceHistory, 'id' | 'timestamp'>[] = [];
       const changedByName = user.displayName || user.email || 'Usuario';
 
@@ -58,6 +67,14 @@ export function useUpdateIncidence() {
               oldStatus: String(oldValue ?? ''),
               newStatus: String(newValue),
             });
+          } else if (key === 'conformityStatus') {
+            historyEntries.push({
+              changedBy: user.uid,
+              changedByName,
+              changeType: 'conformity',
+              oldValue: String(oldValue ?? ''),
+              newValue: String(newValue),
+            });
           } else {
             historyEntries.push({
               changedBy: user.uid,
@@ -71,7 +88,7 @@ export function useUpdateIncidence() {
         }
       });
 
-      if (Object.keys(updateData).length === 0) {
+      if (Object.keys(updateData).length === 2) { // solo updatedBy y updatedAt
         setIsLoading(false);
         return;
       }

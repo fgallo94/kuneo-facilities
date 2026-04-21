@@ -14,10 +14,18 @@ import { ConfirmDismissModal } from '@/features/notifications/components/Confirm
 import { GlobalSearchBar } from '@/features/search/components/GlobalSearchBar';
 import type { UserNotification } from '@/types';
 
+function AdminSearchSection({ onSelect }: { onSelect: (incidence: { id: string }) => void }) {
+  const { incidences } = useAllIncidences();
+  return (
+    <div className="flex-1">
+      <GlobalSearchBar incidences={incidences} onSelect={onSelect} />
+    </div>
+  );
+}
+
 export function DashboardHeader() {
   const { user } = useAuth();
   const { openDetail } = useIncidenceDetailContext();
-  const { incidences } = useAllIncidences();
 
   const userId = user?.uid;
   const isAdmin = user?.role === 'admin';
@@ -27,7 +35,7 @@ export function DashboardHeader() {
     urgentAlerts,
     unreadCount,
     markAsRead,
-  } = useNotifications(isAdmin ? userId : undefined);
+  } = useNotifications(userId);
 
   const { dismiss, isLoading: dismissLoading } = useDismissNotification();
   useFCM();
@@ -62,23 +70,13 @@ export function DashboardHeader() {
     openDetail(incidenceId);
   };
 
-  if (!isAdmin) {
-    // Para usuarios no-admin no mostramos notificaciones de admin ni buscador global
-    return null;
-  }
-
   return (
     <div className="space-y-3">
       {/* Top Bar */}
       <div className="flex items-center justify-between gap-4">
-        <div className="flex-1">
-          <GlobalSearchBar
-            incidences={incidences}
-            onSelect={handleSearchSelect}
-          />
-        </div>
+        {isAdmin && <AdminSearchSection onSelect={handleSearchSelect} />}
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 ml-auto">
           <NotificationBell
             notifications={notifications}
             unreadCount={unreadCount}
@@ -107,11 +105,13 @@ export function DashboardHeader() {
         </div>
       </div>
 
-      {/* Urgent Alerts */}
-      <UrgentAlertBanner
-        alerts={urgentAlerts}
-        onDismiss={(id) => handleDismissRequest(id, 'urgent')}
-      />
+      {/* Urgent Alerts — solo para admins */}
+      {isAdmin && (
+        <UrgentAlertBanner
+          alerts={urgentAlerts}
+          onDismiss={(id) => handleDismissRequest(id, 'urgent')}
+        />
+      )}
 
       {/* Confirm Dismiss Modal */}
       <ConfirmDismissModal

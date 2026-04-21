@@ -42,6 +42,8 @@ export const INCIDENCE_STATUSES = [
 
 export type IncidenceStatus = (typeof INCIDENCE_STATUSES)[number];
 
+export type ConformityStatus = 'pending' | 'accepted' | 'rejected';
+
 export interface Group {
   id: string;
   name: string;
@@ -92,13 +94,21 @@ export interface Incidence {
   urgency?: UrgencyLevel;
   billTo: 'Propietario' | 'Explotador';
   createdAt?: Timestamp;
+  // Campos de conformidad
+  conformityStatus?: ConformityStatus;
+  conformityReason?: string;
+  conformityComment?: string;
+  conformityImageUrls?: string[];
+  // Evidencia de reparación (adjuntada por admin al cerrar)
+  repairEvidenceImageUrls?: string[];
+  repairEvidenceComment?: string;
 }
 
 export interface IncidenceHistory {
   id: string;
   changedBy: string;
   changedByName?: string;
-  changeType: 'status' | 'field' | 'comment' | 'creation';
+  changeType: 'status' | 'field' | 'comment' | 'creation' | 'conformity';
   oldStatus?: string;
   newStatus?: string;
   field?: string;
@@ -116,7 +126,16 @@ export interface IncidenceComment {
   createdAt: Timestamp;
 }
 
-export type NotificationType = 'new_incidence';
+export const NOTIFICATION_TYPES = [
+  'new_incidence',
+  'status_change',
+  'comment',
+  'conformity_request',
+  'conformity_accepted',
+  'conformity_rejected',
+] as const;
+
+export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 
 export interface Notification {
   id: string;
