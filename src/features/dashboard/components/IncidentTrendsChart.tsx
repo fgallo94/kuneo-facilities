@@ -68,13 +68,13 @@ export function IncidentTrendsChart({ data }: IncidentTrendsChartProps) {
       x: {
         stacked: true,
         grid: { display: false },
-        ticks: { font: { size: 12 }, color: '#64748b' },
+        ticks: { font: { size: 12 }, color: '#6a6a6a' },
       },
       y: {
         stacked: true,
         beginAtZero: true,
-        grid: { color: '#e2e8f0' },
-        ticks: { font: { size: 12 }, color: '#64748b' },
+        grid: { color: '#e5e5e5' },
+        ticks: { font: { size: 12 }, color: '#6a6a6a' },
       },
     },
   };

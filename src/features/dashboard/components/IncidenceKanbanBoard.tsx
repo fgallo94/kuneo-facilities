@@ -84,11 +84,11 @@ export function IncidenceKanbanBoard({
             return (
               <div
                 key={status}
-                className="flex min-w-[12rem] flex-1 flex-col rounded-xl border border-slate-200 bg-slate-50"
+                className="flex min-w-[12rem] flex-1 flex-col rounded-xl border border-gray-200 bg-gray-50"
               >
                 <div className="flex items-center justify-between px-3 py-2">
-                  <h3 className="text-sm font-semibold text-slate-900">{status}</h3>
-                  <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs font-medium text-slate-700">
+                  <h3 className="text-sm font-semibold text-charcoal">{status}</h3>
+                  <span className="rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-700">
                     {items.length}
                   </span>
                 </div>
@@ -98,12 +98,12 @@ export function IncidenceKanbanBoard({
                       ref={provided.innerRef}
                       {...provided.droppableProps}
                       className={`flex-1 space-y-2 px-2 pb-2 transition-colors ${
-                        snapshot.isDraggingOver ? 'bg-blue-50/50' : ''
+                        snapshot.isDraggingOver ? 'bg-brand/5' : ''
                       }`}
                     >
                       {items.length === 0 ? (
-                        <div className="flex h-20 items-center justify-center rounded-lg border border-dashed border-slate-300">
-                          <p className="text-xs text-slate-400">Sin incidencias</p>
+                        <div className="flex h-20 items-center justify-center rounded-lg border border-dashed border-gray-300">
+                          <p className="text-xs text-gray-400">Sin incidencias</p>
                         </div>
                       ) : (
                         items.map((inc, index) => (

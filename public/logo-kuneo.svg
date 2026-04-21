@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <!-- Cubo / Edificio K -->
+  <g fill="#f8b132">
+    <!-- Plano frontal izquierdo -->
+    <path d="M40 60 L100 30 L100 90 L40 120 Z"/>
+    <!-- Plano frontal derecho -->
+    <path d="M100 30 L160 60 L160 120 L100 90 Z"/>
+    <!-- Plano superior -->
+    <path d="M40 60 L100 30 L160 60 L100 90 Z"/>
+    <!-- Detalle K negativo (líneas blancas) -->
+    <path d="M70 75 L70 105 L85 97 L85 82 L100 105 L115 97 L95 70 Z" fill="#ffffff"/>
+  </g>
+  <!-- KUNEO -->
+  <text x="100" y="145" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="22" letter-spacing="2" fill="#3c3c3b">KUNEO</text>
+  <!-- BUILDING -->
+  <text x="100" y="165" text-anchor="middle" font-family="Arial, sans-serif" font-weight="400" font-size="10" letter-spacing="4" fill="#6a6a6a">BUILDING</text>
+</svg>

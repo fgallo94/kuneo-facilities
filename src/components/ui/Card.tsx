@@ -10,7 +10,7 @@ export const Card = ({
   return (
     <div
       className={[
-        'rounded-xl border border-slate-200 bg-white shadow-sm',
+        'rounded-xl border border-gray-200 bg-white shadow-sm',
         className,
       ].join(' ')}
     >
@@ -27,7 +27,7 @@ export const CardHeader = ({
   className?: string;
 }) => {
   return (
-    <div className={['border-b border-slate-100 px-5 py-4', className].join(' ')}>
+    <div className={['border-b border-gray-100 px-5 py-4', className].join(' ')}>
       {children}
     </div>
   );
@@ -53,7 +53,7 @@ export const CardTitle = ({
   return (
     <h3
       className={[
-        'text-base font-semibold text-slate-900',
+        'text-base font-semibold text-charcoal',
         className,
       ].join(' ')}
     >

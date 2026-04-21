@@ -2,7 +2,8 @@
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Building2, Mail, Lock, ArrowRight, ArrowLeft, KeyRound } from 'lucide-react';
+import { Mail, Lock, ArrowRight, ArrowLeft, KeyRound } from 'lucide-react';
+import { Logo } from '@/components/ui/Logo';
 import {
   loginSchema,
   type LoginSchema,
@@ -75,13 +76,10 @@ export function LoginForm({
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4 py-12">
       <div className="mb-8 text-center">
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <div className="bg-blue-900 text-white p-2 rounded-md">
-            <Building2 className="h-6 w-6" />
-          </div>
-          <h1 className="text-2xl font-bold text-blue-900">Kuneo Facilities</h1>
+        <div className="flex items-center justify-center mb-3">
+          <Logo size="lg" />
         </div>
-        <p className="text-sm font-medium text-gray-500 tracking-wide">COMMAND CENTER LOGIN</p>
+        <p className="text-sm font-medium text-gray-500 tracking-widest uppercase">Portal de Gestión</p>
       </div>
 
       <div className="w-full max-w-md bg-white rounded-lg shadow-sm border border-gray-100 p-8">
@@ -100,10 +98,10 @@ export function LoginForm({
                   type="email"
                   autoComplete="email"
                   placeholder="nombre@empresa.com"
-                  className="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2.5 pr-10 text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-blue-900 focus:ring-1 focus:ring-blue-900"
+                  className="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2.5 pr-10 text-sm text-charcoal placeholder-gray-400 outline-none focus:border-brand focus:ring-1 focus:ring-brand"
                   {...loginForm.register('email')}
                 />
-                <Mail className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Mail className="absolute right-3 top-1/2 -trangray-y-1/2 h-4 w-4 text-gray-400" />
               </div>
               {loginForm.formState.errors.email && (
                 <p className="mt-1 text-xs text-red-600">{loginForm.formState.errors.email.message}</p>
@@ -120,10 +118,10 @@ export function LoginForm({
                   type="password"
                   autoComplete="current-password"
                   placeholder="••••••••"
-                  className="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2.5 pr-10 text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-blue-900 focus:ring-1 focus:ring-blue-900"
+                  className="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2.5 pr-10 text-sm text-charcoal placeholder-gray-400 outline-none focus:border-brand focus:ring-1 focus:ring-brand"
                   {...loginForm.register('password')}
                 />
-                <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Lock className="absolute right-3 top-1/2 -trangray-y-1/2 h-4 w-4 text-gray-400" />
               </div>
               {loginForm.formState.errors.password && (
                 <p className="mt-1 text-xs text-red-600">{loginForm.formState.errors.password.message}</p>
@@ -134,7 +132,7 @@ export function LoginForm({
               <input
                 id="remember"
                 type="checkbox"
-                className="h-4 w-4 rounded border-gray-300 text-blue-900 focus:ring-blue-900"
+                className="h-4 w-4 rounded border-gray-300 text-brand focus:ring-brand"
                 {...loginForm.register('remember')}
               />
               <label htmlFor="remember" className="ml-2 text-sm text-gray-600">
@@ -151,7 +149,7 @@ export function LoginForm({
             <button
               type="submit"
               disabled={isLoading}
-              className="flex w-full items-center justify-center gap-2 rounded-md bg-blue-900 px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex w-full items-center justify-center gap-2 rounded-md bg-charcoal px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-charcoal-light disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isLoading ? 'Ingresando...' : 'Ingresar al portal'}
               {!isLoading && <ArrowRight className="h-4 w-4" />}
@@ -161,7 +159,7 @@ export function LoginForm({
 
         {mode === 'forgot' && (
           <form onSubmit={handleForgotSubmit} className="space-y-5">
-            <div className="rounded-md bg-blue-50 p-3 text-sm text-blue-800">
+            <div className="rounded-md bg-brand/10 p-3 text-sm text-charcoal">
               ¿Es tu primera vez? No te preocupes. Ingresa tu correo y te enviaremos un enlace para que configures tu contraseña.
             </div>
 
@@ -175,10 +173,10 @@ export function LoginForm({
                   type="email"
                   autoComplete="email"
                   placeholder="nombre@empresa.com"
-                  className="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2.5 pr-10 text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-blue-900 focus:ring-1 focus:ring-blue-900"
+                  className="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2.5 pr-10 text-sm text-charcoal placeholder-gray-400 outline-none focus:border-brand focus:ring-1 focus:ring-brand"
                   {...forgotForm.register('email')}
                 />
-                <Mail className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Mail className="absolute right-3 top-1/2 -trangray-y-1/2 h-4 w-4 text-gray-400" />
               </div>
               {forgotForm.formState.errors.email && (
                 <p className="mt-1 text-xs text-red-600">{forgotForm.formState.errors.email.message}</p>
@@ -200,7 +198,7 @@ export function LoginForm({
             <button
               type="submit"
               disabled={isLoading}
-              className="flex w-full items-center justify-center gap-2 rounded-md bg-blue-900 px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex w-full items-center justify-center gap-2 rounded-md bg-charcoal px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-charcoal-light disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isLoading ? 'Enviando...' : 'Enviar enlace'}
               {!isLoading && <Mail className="h-4 w-4" />}
@@ -229,10 +227,10 @@ export function LoginForm({
                   type="password"
                   autoComplete="new-password"
                   placeholder="••••••••"
-                  className="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2.5 pr-10 text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-blue-900 focus:ring-1 focus:ring-blue-900"
+                  className="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2.5 pr-10 text-sm text-charcoal placeholder-gray-400 outline-none focus:border-brand focus:ring-1 focus:ring-brand"
                   {...resetForm.register('password')}
                 />
-                <KeyRound className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <KeyRound className="absolute right-3 top-1/2 -trangray-y-1/2 h-4 w-4 text-gray-400" />
               </div>
               {resetForm.formState.errors.password && (
                 <p className="mt-1 text-xs text-red-600">{resetForm.formState.errors.password.message}</p>
@@ -249,10 +247,10 @@ export function LoginForm({
                   type="password"
                   autoComplete="new-password"
                   placeholder="••••••••"
-                  className="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2.5 pr-10 text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-blue-900 focus:ring-1 focus:ring-blue-900"
+                  className="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2.5 pr-10 text-sm text-charcoal placeholder-gray-400 outline-none focus:border-brand focus:ring-1 focus:ring-brand"
                   {...resetForm.register('confirmPassword')}
                 />
-                <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Lock className="absolute right-3 top-1/2 -trangray-y-1/2 h-4 w-4 text-gray-400" />
               </div>
               {resetForm.formState.errors.confirmPassword && (
                 <p className="mt-1 text-xs text-red-600">{resetForm.formState.errors.confirmPassword.message}</p>
@@ -268,7 +266,7 @@ export function LoginForm({
             <button
               type="submit"
               disabled={isLoading}
-              className="flex w-full items-center justify-center gap-2 rounded-md bg-blue-900 px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex w-full items-center justify-center gap-2 rounded-md bg-charcoal px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-charcoal-light disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isLoading ? 'Guardando...' : 'Guardar contraseña'}
               {!isLoading && <ArrowRight className="h-4 w-4" />}
@@ -283,7 +281,7 @@ export function LoginForm({
           onClick={() => onSwitchMode?.('forgot')}
           className="mt-4 flex w-full max-w-md items-center justify-center gap-2 rounded-md bg-gray-100 px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-200"
         >
-          <div className="bg-gray-700 text-white p-0.5 rounded-sm">
+          <div className="bg-charcoal text-white p-0.5 rounded-sm">
             <Lock className="h-3 w-3" />
           </div>
           ¿Olvidó su contraseña?

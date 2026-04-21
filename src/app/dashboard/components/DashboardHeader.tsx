@@ -88,13 +88,13 @@ export function DashboardHeader() {
           />
 
           <button
-            className="rounded-full p-2 text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
+            className="rounded-full p-2 text-gray-600 transition-colors hover:bg-gray-100 hover:text-charcoal"
             aria-label="Configuración"
           >
             <Settings className="h-5 w-5" />
           </button>
 
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-900 text-xs font-bold text-white">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand text-xs font-bold text-charcoal">
             {user?.displayName
               ? user.displayName
                   .split(' ')

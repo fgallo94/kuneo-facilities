@@ -29,14 +29,14 @@ export function ConfirmDismissModal({
             <AlertTriangle className="h-5 w-5" />
           </div>
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-slate-900">
+            <h3 className="text-lg font-semibold text-gray-900">
               Confirmar descarte
             </h3>
-            <p className="mt-2 text-sm text-slate-600">
+            <p className="mt-2 text-sm text-gray-600">
               Esta notificación es de <strong>alta urgencia</strong>.{' '}
-              <span className="font-medium text-slate-800">{notificationTitle}</span>
+              <span className="font-medium text-gray-800">{notificationTitle}</span>
             </p>
-            <p className="mt-1 text-sm text-slate-600">
+            <p className="mt-1 text-sm text-gray-600">
               ¿Está seguro de que desea descartarla? Se registrará que usted fue quien la descartó.
             </p>
           </div>
@@ -57,7 +57,7 @@ export function ConfirmDismissModal({
 
         <button
           onClick={onCancel}
-          className="absolute right-4 top-4 rounded-md p-1 text-slate-400 hover:text-slate-600"
+          className="absolute right-4 top-4 rounded-md p-1 text-gray-400 hover:text-gray-600"
           aria-label="Cerrar"
         >
           <X className="h-4 w-4" />

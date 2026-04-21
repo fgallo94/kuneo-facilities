@@ -26,13 +26,13 @@ const URGENCY_LABELS: Record<string, string> = {
 };
 
 const URGENCY_STYLES: Record<string, string> = {
-  normal: 'bg-slate-100 text-slate-700',
+  normal: 'bg-gray-100 text-gray-700',
   high: 'bg-amber-100 text-amber-700',
   urgent: 'bg-red-100 text-red-700',
 };
 
 const STATUS_STYLES: Record<string, string> = {
-  Reportada: 'bg-blue-100 text-blue-700',
+  Reportada: 'bg-brand/15 text-charcoal',
   'En reparación': 'bg-yellow-100 text-yellow-700',
   Reparado: 'bg-green-100 text-green-700',
   'A falta de presupuesto': 'bg-orange-100 text-orange-700',
@@ -165,7 +165,7 @@ export function IncidenceDetailModal({
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
         <div className="w-full max-w-3xl rounded-xl bg-white p-8 shadow-xl">
           <div className="flex h-40 items-center justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-900" />
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-300 border-t-brand" />
           </div>
         </div>
       </div>
@@ -177,15 +177,15 @@ export function IncidenceDetailModal({
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
         <div className="w-full max-w-3xl rounded-xl bg-white p-8 shadow-xl">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-slate-900">Incidencia no encontrada</h2>
+            <h2 className="text-lg font-bold text-gray-900">Incidencia no encontrada</h2>
             <button
               onClick={onClose}
-              className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+              className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
             >
               <X className="h-5 w-5" />
             </button>
           </div>
-          <p className="mt-4 text-sm text-slate-600">
+          <p className="mt-4 text-sm text-gray-600">
             La incidencia solicitada no existe o ha sido eliminada.
           </p>
         </div>
@@ -196,7 +196,7 @@ export function IncidenceDetailModal({
   const urgencyKey = getUrgencyFromSeverity(incidence.severity, incidence.urgency);
   const urgencyLabel = URGENCY_LABELS[urgencyKey] ?? 'Normal';
   const urgencyStyle = URGENCY_STYLES[urgencyKey] ?? URGENCY_STYLES.normal;
-  const statusStyle = STATUS_STYLES[incidence.status] ?? 'bg-slate-100 text-slate-700';
+  const statusStyle = STATUS_STYLES[incidence.status] ?? 'bg-gray-100 text-gray-700';
 
   const reporter = userMap.get(incidence.reportedBy);
   const reporterName = reporter?.displayName || reporter?.email || 'Usuario desconocido';
@@ -255,7 +255,7 @@ export function IncidenceDetailModal({
       <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4 pt-10 md:items-center md:pt-0">
         <div className="w-full max-w-3xl overflow-hidden rounded-xl bg-white shadow-xl">
           {/* Header */}
-          <div className="bg-blue-900 px-5 py-3">
+          <div className="bg-charcoal px-5 py-3">
             <div className="flex items-start justify-between gap-4">
               <div className="flex flex-wrap items-center gap-2">
                 <span
@@ -271,7 +271,7 @@ export function IncidenceDetailModal({
               </div>
               <button
                 onClick={onClose}
-                className="rounded-md p-1 text-blue-200 transition-colors hover:bg-blue-800 hover:text-white"
+                className="rounded-md p-1 text-blue-200 transition-colors hover:bg-charcoal-light hover:text-white"
                 aria-label="Cerrar"
               >
                 <X className="h-5 w-5" />
@@ -286,7 +286,7 @@ export function IncidenceDetailModal({
           </div>
 
           {/* Body */}
-          <div className="bg-slate-50 px-5 py-3">
+          <div className="bg-gray-50 px-5 py-3">
             {(incidenceError || historyError || commentsError) && (
               <div className="mb-4 rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">
                 <p className="font-medium">Error al cargar la incidencia</p>
@@ -297,36 +297,36 @@ export function IncidenceDetailModal({
             )}
             <div className="grid gap-3 md:grid-cols-3">
               {/* Description */}
-              <div className="rounded-xl border border-slate-200 bg-white p-3 md:col-span-2">
-                <h3 className="text-sm font-semibold text-slate-900">Descripción</h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-slate-600">
+              <div className="rounded-xl border border-gray-200 bg-white p-3 md:col-span-2">
+                <h3 className="text-sm font-semibold text-gray-900">Descripción</h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-gray-600">
                   {incidence.description || 'Sin descripción'}
                 </p>
-                <div className="mt-2 flex flex-wrap gap-2 text-xs text-slate-500">
-                  <span className="rounded-md bg-slate-100 px-2 py-1">
+                <div className="mt-2 flex flex-wrap gap-2 text-xs text-gray-500">
+                  <span className="rounded-md bg-gray-100 px-2 py-1">
                     Categoría: {CATEGORY_LABELS[incidence.category] ?? incidence.category}
                   </span>
-                  <span className="rounded-md bg-slate-100 px-2 py-1">
+                  <span className="rounded-md bg-gray-100 px-2 py-1">
                     Facturar a: {incidence.billTo}
                   </span>
-                  <span className="rounded-md bg-slate-100 px-2 py-1">
+                  <span className="rounded-md bg-gray-100 px-2 py-1">
                     Severidad: {incidence.severity}/5
                   </span>
                 </div>
               </div>
 
               {/* Reported By */}
-              <div className="rounded-xl border border-slate-200 bg-white p-3">
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <div className="rounded-xl border border-gray-200 bg-white p-3">
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                   Reportado por
                 </h3>
                 <div className="mt-2 flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-900 text-xs font-bold text-white">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-charcoal text-xs font-bold text-white">
                     {reporterInitials}
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-slate-900">{reporterName}</p>
-                    <p className="text-xs text-slate-500">{reportedDateTime}</p>
+                    <p className="text-sm font-semibold text-gray-900">{reporterName}</p>
+                    <p className="text-xs text-gray-500">{reportedDateTime}</p>
                   </div>
                 </div>
               </div>
@@ -334,10 +334,10 @@ export function IncidenceDetailModal({
 
             <div className="mt-3 grid gap-3 md:grid-cols-3">
               {/* Visual Evidence */}
-              <div className="rounded-xl border border-slate-200 bg-white p-3 md:col-span-2">
-                <h3 className="text-sm font-semibold text-slate-900">Evidencia visual</h3>
+              <div className="rounded-xl border border-gray-200 bg-white p-3 md:col-span-2">
+                <h3 className="text-sm font-semibold text-gray-900">Evidencia visual</h3>
                 {incidence.imageUrls.length === 0 ? (
-                  <p className="mt-2 text-sm text-slate-400">No hay imágenes adjuntas</p>
+                  <p className="mt-2 text-sm text-gray-400">No hay imágenes adjuntas</p>
                 ) : (
                   <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
                     {incidence.imageUrls.map((url, idx) => (
@@ -346,7 +346,7 @@ export function IncidenceDetailModal({
                         href={url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="group relative aspect-square overflow-hidden rounded-lg border border-slate-200 bg-slate-100"
+                        className="group relative aspect-square overflow-hidden rounded-lg border border-gray-200 bg-gray-100"
                       >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
@@ -362,33 +362,33 @@ export function IncidenceDetailModal({
               </div>
 
               {/* Activity History */}
-              <div className="rounded-xl border border-slate-200 bg-white p-3">
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <div className="rounded-xl border border-gray-200 bg-white p-3">
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                   Historial de actividad
                 </h3>
                 {historyLoading ? (
                   <div className="mt-2 flex items-center justify-center py-4">
-                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-blue-900" />
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-brand" />
                   </div>
                 ) : reversedTimeline.length === 0 ? (
-                  <p className="mt-2 text-sm text-slate-400">Sin historial</p>
+                  <p className="mt-2 text-sm text-gray-400">Sin historial</p>
                 ) : (
                   <div className="relative mt-2 pl-4">
-                    <div className="absolute left-[7px] top-2 bottom-2 w-px bg-slate-200" />
+                    <div className="absolute left-[7px] top-2 bottom-2 w-px bg-gray-200" />
                     <ul className="space-y-3">
                       {recentTimeline.map((item) => (
                         <li key={item.id} className="relative">
                           <span
                             className={`absolute -left-[9px] top-1 h-2 w-2 rounded-full ring-2 ring-white ${
-                              item.isInitial ? 'bg-blue-600' : 'bg-slate-400'
+                              item.isInitial ? 'bg-blue-600' : 'bg-gray-400'
                             }`}
                           />
-                          <p className="text-sm font-medium text-slate-800">{item.text}</p>
+                          <p className="text-sm font-medium text-gray-800">{item.text}</p>
                           {item.subtitle && (
-                            <p className="mt-0.5 text-xs text-slate-600">{item.subtitle}</p>
+                            <p className="mt-0.5 text-xs text-gray-600">{item.subtitle}</p>
                           )}
                           {item.detail && (
-                            <p className="mt-0.5 text-[11px] text-slate-500">{item.detail}</p>
+                            <p className="mt-0.5 text-[11px] text-gray-500">{item.detail}</p>
                           )}
                         </li>
                       ))}
@@ -396,7 +396,7 @@ export function IncidenceDetailModal({
                     {reversedTimeline.length > 3 && (
                       <button
                         onClick={() => setShowFullHistory(true)}
-                        className="mt-2 text-xs font-medium text-blue-700 hover:text-blue-800 hover:underline"
+                        className="mt-2 text-xs font-medium text-charcoal hover:text-charcoal hover:underline"
                       >
                         Ver historial completo
                       </button>
@@ -407,15 +407,15 @@ export function IncidenceDetailModal({
             </div>
 
             {/* Comments Section */}
-            <div className="mt-3 rounded-xl border border-slate-200 bg-white p-3">
-              <h3 className="text-sm font-semibold text-slate-900">Comentarios</h3>
+            <div className="mt-3 rounded-xl border border-gray-200 bg-white p-3">
+              <h3 className="text-sm font-semibold text-gray-900">Comentarios</h3>
 
               {commentsLoading ? (
                 <div className="mt-2 flex items-center justify-center py-4">
-                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-blue-900" />
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-brand" />
                 </div>
               ) : comments.length === 0 ? (
-                <p className="mt-2 text-sm text-slate-400">
+                <p className="mt-2 text-sm text-gray-400">
                   No hay comentarios aún. Sé el primero en comentar.
                 </p>
               ) : (
@@ -425,18 +425,18 @@ export function IncidenceDetailModal({
                       const authorName = c.authorName || 'Usuario';
                       const createdAt = normalizeTimestamp(c.createdAt);
                       return (
-                        <li key={c.id} className="rounded-lg border border-slate-100 bg-slate-50 p-2.5">
+                        <li key={c.id} className="rounded-lg border border-gray-100 bg-gray-50 p-2.5">
                           <div className="flex items-center justify-between gap-2">
-                            <span className="text-xs font-semibold text-slate-700">
+                            <span className="text-xs font-semibold text-gray-700">
                               {authorName}
                             </span>
                             {createdAt && (
-                              <span className="text-[11px] text-slate-400">
+                              <span className="text-[11px] text-gray-400">
                                 {formatDate(createdAt)} a las {formatTime(createdAt)}
                               </span>
                             )}
                           </div>
-                          <p className="mt-1 text-sm text-slate-700">{c.text}</p>
+                          <p className="mt-1 text-sm text-gray-700">{c.text}</p>
                         </li>
                       );
                     })}
@@ -444,7 +444,7 @@ export function IncidenceDetailModal({
                   {comments.length > 2 && (
                     <button
                       onClick={() => setShowAllComments(true)}
-                      className="mt-2 text-xs font-medium text-blue-700 hover:text-blue-800 hover:underline"
+                      className="mt-2 text-xs font-medium text-charcoal hover:text-charcoal hover:underline"
                     >
                       Ver más comentarios
                     </button>
@@ -474,12 +474,12 @@ export function IncidenceDetailModal({
                     }}
                     placeholder="Escribe un comentario..."
                     rows={2}
-                    className="flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-900 focus:ring-1 focus:ring-blue-900"
+                    className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-brand focus:ring-1 focus:ring-brand"
                   />
                   <button
                     onClick={handleSubmitComment}
                     disabled={!commentText.trim() || addingComment}
-                    className="flex min-w-[5.5rem] items-center justify-center gap-1 rounded-md bg-blue-900 px-3 py-2 text-sm font-medium text-white hover:bg-blue-800 disabled:opacity-50"
+                    className="flex min-w-[5.5rem] items-center justify-center gap-1 rounded-md bg-charcoal px-3 py-2 text-sm font-medium text-white hover:bg-charcoal-light disabled:opacity-50"
                   >
                     {addingComment ? (
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
@@ -496,10 +496,10 @@ export function IncidenceDetailModal({
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between border-t border-slate-200 bg-white px-5 py-3">
+          <div className="flex items-center justify-between border-t border-gray-200 bg-white px-5 py-3">
             <button
               onClick={onClose}
-              className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
               Cerrar
             </button>
@@ -507,7 +507,7 @@ export function IncidenceDetailModal({
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setEditing(true)}
-                  className="rounded-md bg-blue-900 px-4 py-2 text-sm font-medium text-white hover:bg-blue-800"
+                  className="rounded-md bg-charcoal px-4 py-2 text-sm font-medium text-white hover:bg-charcoal-light"
                 >
                   Cambiar estado
                 </button>
@@ -527,11 +527,11 @@ export function IncidenceDetailModal({
             className="w-full max-w-lg overflow-hidden rounded-xl bg-white shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3">
-              <h3 className="text-lg font-semibold text-slate-900">Historial completo</h3>
+            <div className="flex items-center justify-between border-b border-gray-200 px-5 py-3">
+              <h3 className="text-lg font-semibold text-gray-900">Historial completo</h3>
               <button
                 onClick={() => setShowFullHistory(false)}
-                className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
                 aria-label="Cerrar"
               >
                 <X className="h-5 w-5" />
@@ -539,31 +539,31 @@ export function IncidenceDetailModal({
             </div>
             <div className="max-h-[60vh] overflow-y-auto px-5 py-3">
               <div className="relative pl-4">
-                <div className="absolute left-[7px] top-2 bottom-2 w-px bg-slate-200" />
+                <div className="absolute left-[7px] top-2 bottom-2 w-px bg-gray-200" />
                 <ul className="space-y-3">
                   {reversedTimeline.map((item) => (
                     <li key={item.id} className="relative">
                       <span
                         className={`absolute -left-[9px] top-1 h-2 w-2 rounded-full ring-2 ring-white ${
-                          item.isInitial ? 'bg-blue-600' : 'bg-slate-400'
+                          item.isInitial ? 'bg-blue-600' : 'bg-gray-400'
                         }`}
                       />
-                      <p className="text-sm font-medium text-slate-800">{item.text}</p>
+                      <p className="text-sm font-medium text-gray-800">{item.text}</p>
                       {item.subtitle && (
-                        <p className="mt-0.5 text-xs text-slate-600">{item.subtitle}</p>
+                        <p className="mt-0.5 text-xs text-gray-600">{item.subtitle}</p>
                       )}
                       {item.detail && (
-                        <p className="mt-0.5 text-[11px] text-slate-500">{item.detail}</p>
+                        <p className="mt-0.5 text-[11px] text-gray-500">{item.detail}</p>
                       )}
                     </li>
                   ))}
                 </ul>
               </div>
             </div>
-            <div className="flex justify-end border-t border-slate-200 bg-white px-5 py-3">
+            <div className="flex justify-end border-t border-gray-200 bg-white px-5 py-3">
               <button
                 onClick={() => setShowFullHistory(false)}
-                className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
               >
                 Cerrar
               </button>
@@ -582,11 +582,11 @@ export function IncidenceDetailModal({
             className="w-full max-w-lg overflow-hidden rounded-xl bg-white shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3">
-              <h3 className="text-lg font-semibold text-slate-900">Todos los comentarios</h3>
+            <div className="flex items-center justify-between border-b border-gray-200 px-5 py-3">
+              <h3 className="text-lg font-semibold text-gray-900">Todos los comentarios</h3>
               <button
                 onClick={() => setShowAllComments(false)}
-                className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
                 aria-label="Cerrar"
               >
                 <X className="h-5 w-5" />
@@ -598,25 +598,25 @@ export function IncidenceDetailModal({
                   const authorName = c.authorName || 'Usuario';
                   const createdAt = normalizeTimestamp(c.createdAt);
                   return (
-                    <li key={c.id} className="rounded-lg border border-slate-100 bg-slate-50 p-2.5">
+                    <li key={c.id} className="rounded-lg border border-gray-100 bg-gray-50 p-2.5">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-xs font-semibold text-slate-700">{authorName}</span>
+                        <span className="text-xs font-semibold text-gray-700">{authorName}</span>
                         {createdAt && (
-                          <span className="text-[11px] text-slate-400">
+                          <span className="text-[11px] text-gray-400">
                             {formatDate(createdAt)} a las {formatTime(createdAt)}
                           </span>
                         )}
                       </div>
-                      <p className="mt-1 text-sm text-slate-700">{c.text}</p>
+                      <p className="mt-1 text-sm text-gray-700">{c.text}</p>
                     </li>
                   );
                 })}
               </ul>
             </div>
-            <div className="flex justify-end border-t border-slate-200 bg-white px-5 py-3">
+            <div className="flex justify-end border-t border-gray-200 bg-white px-5 py-3">
               <button
                 onClick={() => setShowAllComments(false)}
-                className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
               >
                 Cerrar
               </button>

@@ -42,8 +42,8 @@ const urgencyMeta: Record<
   (typeof URGENCY_LEVELS)[number],
   { label: string; color: string }
 > = {
-  normal: { label: 'Normal', color: 'bg-slate-100 text-slate-700 border-slate-200' },
-  high: { label: 'Alta', color: 'bg-blue-100 text-blue-900 border-blue-200' },
+  normal: { label: 'Normal', color: 'bg-gray-100 text-gray-700 border-gray-200' },
+  high: { label: 'Alta', color: 'bg-brand/15 text-charcoal border-brand/20' },
   urgent: { label: 'Urgente', color: 'bg-red-100 text-red-700 border-red-200' },
 };
 
@@ -110,15 +110,15 @@ export function IncidenceReportForm({
     <div className="mx-auto w-full max-w-6xl p-4 sm:p-6 lg:p-8">
       {/* Header */}
       <div className="mb-6 md:mb-8">
-        <nav className="text-xs text-slate-500">
-          <span className="hover:text-slate-700 cursor-pointer">Incidencias</span>
+        <nav className="text-xs text-gray-500">
+          <span className="hover:text-gray-700 cursor-pointer">Incidencias</span>
           <span className="mx-2">/</span>
-          <span className="text-slate-900 font-medium">Nuevo Reporte</span>
+          <span className="text-gray-900 font-medium">Nuevo Reporte</span>
         </nav>
-        <h1 className="mt-2 text-2xl font-bold text-slate-900 md:text-3xl">
+        <h1 className="mt-2 text-2xl font-bold text-gray-900 md:text-3xl">
           Reportar Incidencia
         </h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm text-gray-500">
           Documenta los problemas con precisión. Nuestro equipo prioriza los reportes según la descripción detallada y la evidencia visual.
         </p>
       </div>
@@ -198,7 +198,7 @@ export function IncidenceReportForm({
                             active
                               ? urgencyMeta[level].color +
                                 ' ring-1 ring-offset-1'
-                              : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50',
+                              : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50',
                           ].join(' ')}
                         >
                           {urgencyMeta[level].label}
@@ -271,41 +271,41 @@ export function IncidenceReportForm({
         <aside className="space-y-5">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-                <Info className="h-4 w-4 text-blue-900" />
+              <CardTitle className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+                <Info className="h-4 w-4 text-charcoal" />
                 Guía de reporte
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex gap-3">
-                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-900">
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand/15 text-xs font-bold text-charcoal">
                   01
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-900">La precisión importa</p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-sm font-medium text-gray-900">La precisión importa</p>
+                  <p className="text-xs text-gray-500">
                     Especifica la ubicación exacta y los detalles del problema.
                   </p>
                 </div>
               </div>
               <div className="flex gap-3">
-                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-900">
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand/15 text-xs font-bold text-charcoal">
                   02
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-900">Prueba visual</p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-sm font-medium text-gray-900">Prueba visual</p>
+                  <p className="text-xs text-gray-500">
                     Fotos claras ayudan al equipo de mantenimiento a traer las herramientas correctas.
                   </p>
                 </div>
               </div>
               <div className="flex gap-3">
-                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-900">
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand/15 text-xs font-bold text-charcoal">
                   03
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-900">Tiempo de respuesta</p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-sm font-medium text-gray-900">Tiempo de respuesta</p>
+                  <p className="text-xs text-gray-500">
                     La mayoría de reportes se revisan y asignan en menos de 4 horas.
                   </p>
                 </div>
@@ -328,37 +328,37 @@ export function IncidenceReportForm({
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm font-semibold text-slate-900">
+              <CardTitle className="text-sm font-semibold text-gray-900">
                 Tus tickets abiertos
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {openIncidencesLoading ? (
-                <p className="text-sm text-slate-500">Cargando...</p>
+                <p className="text-sm text-gray-500">Cargando...</p>
               ) : openIncidences.length === 0 ? (
-                <p className="text-sm text-slate-500">No hay incidencias abiertas</p>
+                <p className="text-sm text-gray-500">No hay incidencias abiertas</p>
               ) : (
                 openIncidences.map((inc) => {
                   const isInProgress = inc.status === 'En reparación';
                   return (
                     <div
                       key={inc.id}
-                      className="flex items-start gap-3 rounded-lg border border-slate-100 bg-slate-50 p-3"
+                      className="flex items-start gap-3 rounded-lg border border-gray-100 bg-gray-50 p-3"
                     >
                       <div
                         className={`flex h-8 w-8 items-center justify-center rounded-full ${
                           isInProgress
                             ? 'bg-amber-100 text-amber-700'
-                            : 'bg-blue-100 text-blue-900'
+                            : 'bg-brand/15 text-charcoal'
                         }`}
                       >
                         <MapPin className="h-4 w-4" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-slate-900">
+                        <p className="truncate text-sm font-medium text-gray-900">
                           {inc.title}
                         </p>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-gray-500">
                           {inc.status}
                           {inc.createdAt ? ` • ${formatRelativeTime(inc.createdAt)}` : ''}
                         </p>

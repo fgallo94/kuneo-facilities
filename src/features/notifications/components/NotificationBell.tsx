@@ -36,7 +36,7 @@ export function NotificationBell({
     <div className="relative" ref={containerRef}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="relative rounded-full p-2 text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
+        className="relative rounded-full p-2 text-gray-600 transition-colors hover:bg-gray-100 hover:text-charcoal"
         aria-label="Notificaciones"
       >
         <Bell className="h-5 w-5" />
@@ -48,17 +48,17 @@ export function NotificationBell({
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-80 rounded-lg border border-slate-200 bg-white shadow-lg">
-          <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
-            <span className="text-sm font-semibold text-slate-900">Notificaciones</span>
+        <div className="absolute right-0 top-full mt-2 w-80 rounded-lg border border-gray-200 bg-white shadow-lg">
+          <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
+            <span className="text-sm font-semibold text-charcoal">Notificaciones</span>
             {notifications.length > 0 && (
-              <span className="text-xs text-slate-500">{notifications.length} pendientes</span>
+              <span className="text-xs text-gray-500">{notifications.length} pendientes</span>
             )}
           </div>
 
           <div className="max-h-80 overflow-y-auto">
             {notifications.length === 0 ? (
-              <div className="px-4 py-6 text-center text-sm text-slate-500">
+              <div className="px-4 py-6 text-center text-sm text-gray-500">
                 No hay notificaciones pendientes
               </div>
             ) : (
@@ -66,9 +66,9 @@ export function NotificationBell({
                 <div
                   key={n.id}
                   className={[
-                    'group relative flex cursor-pointer flex-col gap-0.5 border-b border-slate-50 px-4 py-3 transition-colors',
-                    n.read ? 'bg-white' : 'bg-blue-50/50',
-                    'hover:bg-slate-50',
+                    'group relative flex cursor-pointer flex-col gap-0.5 border-b border-gray-50 px-4 py-3 transition-colors',
+                    n.read ? 'bg-white' : 'bg-brand/5',
+                    'hover:bg-gray-50',
                   ].join(' ')}
                   onClick={() => {
                     if (!n.read) onMarkAsRead(n.id);
@@ -76,26 +76,26 @@ export function NotificationBell({
                   }}
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <span className="text-sm font-medium text-slate-900">{n.title}</span>
+                    <span className="text-sm font-medium text-charcoal">{n.title}</span>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         onDismiss(n.id, n.urgency);
                       }}
-                      className="rounded p-0.5 text-slate-400 opacity-0 transition-opacity hover:bg-slate-200 hover:text-slate-600 group-hover:opacity-100"
+                      className="rounded p-0.5 text-gray-400 opacity-0 transition-opacity hover:bg-gray-200 hover:text-gray-600 group-hover:opacity-100"
                       aria-label="Descartar"
                     >
                       <X className="h-3.5 w-3.5" />
                     </button>
                   </div>
-                  <p className="line-clamp-2 text-xs text-slate-600">{n.message}</p>
+                  <p className="line-clamp-2 text-xs text-gray-600">{n.message}</p>
                   {n.urgency === 'urgent' && (
                     <span className="mt-1 w-fit rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide bg-red-100 text-red-700">
                       Urgente
                     </span>
                   )}
                   {!n.read && (
-                    <span className="absolute left-1.5 top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-blue-600" />
+                    <span className="absolute left-1.5 top-1/2 h-1.5 w-1.5 -trangray-y-1/2 rounded-full bg-brand-dark" />
                   )}
                 </div>
               ))
