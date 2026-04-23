@@ -28,14 +28,14 @@ const userNavItems = [
 const adminStaticItems = [
   { label: 'Panel', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Buscador Incidencias', href: '/dashboard/incidences/directory', icon: Search },
-  { label: 'Admin', href: '/dashboard/admin', icon: Shield },
+  { label: 'Gestor Propiedades', href: '/dashboard/admin', icon: Shield },
 ];
 
 const adminMobileItems = [
   { label: 'Panel', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Incidencias', href: '/dashboard/incidences', icon: FileText },
   { label: 'Buscador', href: '/dashboard/incidences/directory', icon: Search },
-  { label: 'Admin', href: '/dashboard/admin', icon: Shield },
+  { label: 'Gestor Propiedades', href: '/dashboard/admin', icon: Shield },
 ];
 
 function DashboardLayoutInner({

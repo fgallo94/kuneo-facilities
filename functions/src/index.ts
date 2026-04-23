@@ -2,6 +2,7 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { createUserSchema } from './schemas/createUserSchema';
 import { sendInvoiceEmail } from './callables/sendInvoiceEmail';
+import { sendContractorEmail } from './callables/sendContractorEmail';
 import { sendWhatsAppMessage } from './callables/sendWhatsAppMessage';
 import { onIncidenceCreated } from './triggers/onIncidenceCreated';
 import { onIncidenceUpdated } from './triggers/onIncidenceUpdated';
@@ -12,7 +13,7 @@ if (admin.apps.length === 0) {
   admin.initializeApp();
 }
 
-export { onIncidenceCreated, onIncidenceUpdated, onCommentCreated, sendInvoiceEmail, sendWhatsAppMessage };
+export { onIncidenceCreated, onIncidenceUpdated, onCommentCreated, sendInvoiceEmail, sendContractorEmail, sendWhatsAppMessage };
 
 export const createUser = functions.https.onCall({ cors: true }, async (request) => {
   // 1. Solo admins pueden crear usuarios

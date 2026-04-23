@@ -81,6 +81,10 @@ export function isHistoryVisibleToUser(entry: IncidenceHistory): boolean {
       return true;
     }
 
+    case 'contractor':
+      // Entradas de envío a contratista son puramente administrativas
+      return false;
+
     default:
       return false;
   }
@@ -145,6 +149,10 @@ export function formatPublicHistoryEntry(
       };
     }
     return { title: `${name} actualizó un campo` };
+  }
+
+  if (entry.changeType === 'contractor') {
+    return { title: `${name} envió incidencia a contratista` };
   }
 
   return null;

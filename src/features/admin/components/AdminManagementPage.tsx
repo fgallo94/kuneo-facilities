@@ -6,13 +6,9 @@ import { useGroups } from '@/features/admin/hooks/useGroups';
 import { useInstallations } from '@/features/admin/hooks/useInstallations';
 import { useAdminProperties } from '@/features/admin/hooks/useAdminProperties';
 import { useAdminUsers } from '@/features/admin/hooks/useAdminUsers';
-import { useCreateUser } from '@/features/admin/hooks/useCreateUser';
-import { CreateUserForm } from './CreateUserForm';
-import { UserDirectory } from './UserDirectory';
 import { EntityCard, type Entity } from './EntityCard';
 import { AssignUserModal } from './AssignUserModal';
 import { OnboardEntityModal } from './OnboardEntityModal';
-import type { CreateUserFormData } from '@/features/admin/schemas/createUserSchema';
 import type { OnboardEntityFormData } from '@/features/admin/schemas/onboardEntitySchema';
 import type { Group, Installation } from '@/types';
 
@@ -34,7 +30,7 @@ function entityToFormData(entity: Entity): OnboardEntityFormData {
 }
 
 export function AdminManagementPage() {
-  const { users, refetch: refetchUsers } = useAdminUsers();
+  const { users } = useAdminUsers();
   const { groups, createGroup, assignUsers: assignGroupUsers, updateGroup, refetch: refetchGroups } = useGroups();
   const {
     installations,
@@ -50,31 +46,13 @@ export function AdminManagementPage() {
     updateProperty,
     refetch: refetchProperties,
   } = useAdminProperties();
-  const { createUser, isLoading: creatingUser, error: createUserError, clearError } = useCreateUser();
-
   const [view, setView] = useState<ViewLevel>('groups');
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const [selectedInstallation, setSelectedInstallation] = useState<Installation | null>(null);
 
-  const [showCreateUser, setShowCreateUser] = useState(false);
   const [assignModal, setAssignModal] = useState<{ entity: Entity } | null>(null);
   const [onboardTarget, setOnboardTarget] = useState<OnboardTarget | null>(null);
   const [editTarget, setEditTarget] = useState<{ level: Entity['type']; entity: Entity } | null>(null);
-
-  const handleCreateUser = async (data: CreateUserFormData & { password: string }) => {
-    try {
-      await createUser({
-        email: data.email,
-        password: data.password,
-        displayName: `${data.firstName} ${data.lastName}`,
-        role: data.role,
-      });
-      setShowCreateUser(false);
-      await refetchUsers();
-    } catch {
-      // error ya queda en el estado
-    }
-  };
 
   const handleAssign = async (userIds: string[]) => {
     if (!assignModal) return;
@@ -334,20 +312,6 @@ export function AdminManagementPage() {
 
         {/* Sidebar - 1/4 */}
         <aside className="space-y-5">
-          {showCreateUser ? (
-            <CreateUserForm
-              onSubmit={handleCreateUser}
-              onClose={() => {
-                setShowCreateUser(false);
-                clearError();
-              }}
-              isLoading={creatingUser}
-              serverError={createUserError}
-            />
-          ) : (
-            <UserDirectory users={users} onCreateUserClick={() => setShowCreateUser(true)} />
-          )}
-
           {/* Quick stats */}
           <div className="grid grid-cols-3 gap-2 rounded-xl border border-gray-200 bg-white p-4 text-center">
             <div>
@@ -378,6 +342,13 @@ export function AdminManagementPage() {
       )}
 
       <OnboardEntityModal
+        key={
+          editTarget
+            ? `edit-${editTarget.entity.id}-${editTarget.entity.type}`
+            : onboardTarget
+              ? `create-${onboardTarget.level}`
+              : 'closed'
+        }
         isOpen={isModalOpen}
         onClose={() => {
           setOnboardTarget(null);

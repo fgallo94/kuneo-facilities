@@ -2,7 +2,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { useUsers } from './useUsers';
 
-const mockGetDocs = vi.fn();
+const mockOnSnapshot = vi.fn();
+const mockOrderBy = vi.fn();
 const mockQuery = vi.fn();
 const mockCollection = vi.fn();
 
@@ -12,7 +13,8 @@ vi.mock('firebase/firestore', async () => {
     ...actual,
     collection: (...args: unknown[]) => mockCollection(...args),
     query: (...args: unknown[]) => mockQuery(...args),
-    getDocs: (...args: unknown[]) => mockGetDocs(...args),
+    orderBy: (...args: unknown[]) => mockOrderBy(...args),
+    onSnapshot: (...args: unknown[]) => mockOnSnapshot(...args),
   };
 });
 
@@ -24,6 +26,7 @@ describe('useUsers', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockQuery.mockImplementation((...args) => args);
+    mockOrderBy.mockImplementation((...args) => args);
   });
 
   afterEach(() => {
@@ -35,7 +38,11 @@ describe('useUsers', () => {
       { id: 'user_1', data: () => ({ email: 'a@test.com', displayName: 'Ana' }) },
       { id: 'user_2', data: () => ({ email: 'b@test.com', displayName: null }) },
     ];
-    mockGetDocs.mockResolvedValue({ docs: fakeDocs });
+
+    mockOnSnapshot.mockImplementation((_q, onNext) => {
+      onNext({ docs: fakeDocs });
+      return () => {};
+    });
 
     const { result } = renderHook(() => useUsers());
     await waitFor(() => expect(result.current.loading).toBe(false));
@@ -47,7 +54,10 @@ describe('useUsers', () => {
   });
 
   it('maneja errores de firestore', async () => {
-    mockGetDocs.mockRejectedValue(new Error('permission-denied'));
+    mockOnSnapshot.mockImplementation((_q, _onNext, onError) => {
+      onError(new Error('permission-denied'));
+      return () => {};
+    });
 
     const { result } = renderHook(() => useUsers());
     await waitFor(() => expect(result.current.loading).toBe(false));

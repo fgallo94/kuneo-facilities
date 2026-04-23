@@ -1,11 +1,19 @@
 import type { Timestamp } from 'firebase/firestore';
 
+export interface NotificationPreferences {
+  incidenceCreated: ('email' | 'whatsapp')[];
+  commentAdded: ('email' | 'whatsapp')[];
+  conformityResponse: ('email' | 'whatsapp')[];
+}
+
 export interface User {
   uid: string;
   email: string | null;
   displayName: string | null;
   role: 'admin' | 'user';
+  phone?: string | null;
   assignedEntities?: string[];
+  notificationPreferences?: NotificationPreferences;
 }
 
 export interface LoginFormData {
@@ -124,18 +132,44 @@ export interface Counter {
   createdAt?: Timestamp;
 }
 
+export const CONTRACTOR_TYPES = [
+  'Plomería',
+  'Electricidad',
+  'Carpintería',
+  'Climatización',
+  'Seguridad',
+  'Limpieza',
+] as const;
+
+export type ContractorType = (typeof CONTRACTOR_TYPES)[number];
+
+export interface Contractor {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  type: ContractorType;
+  createdAt?: Timestamp;
+}
+
 
 export interface IncidenceHistory {
   id: string;
   changedBy: string;
   changedByName?: string;
-  changeType: 'status' | 'field' | 'comment' | 'creation' | 'conformity';
+  changeType: 'status' | 'field' | 'comment' | 'creation' | 'conformity' | 'contractor';
   oldStatus?: string;
   newStatus?: string;
   field?: string;
   oldValue?: string;
   newValue?: string;
   comment?: string;
+  contractorId?: string;
+  contractorName?: string;
+  contractorEmail?: string;
+  contractorPhone?: string;
+  contactMethod?: 'email' | 'whatsapp';
+  extraContext?: string;
   timestamp: Timestamp;
 }
 

@@ -10,6 +10,7 @@ export interface CreateUserPayload {
   password: string;
   displayName: string;
   role: 'admin' | 'user';
+  phone?: string;
 }
 
 export function useCreateUser() {
@@ -36,6 +37,7 @@ export function useCreateUser() {
         email,
         displayName,
         role,
+        phone: payload.phone || null,
         assignedEntities: [],
         createdAt: serverTimestamp(),
       });

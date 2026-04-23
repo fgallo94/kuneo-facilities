@@ -1,6 +1,7 @@
 import * as functions from 'firebase-functions/v1';
-import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import { getFirestore } from 'firebase-admin/firestore';
 import { getMessaging } from 'firebase-admin/messaging';
+import { notifyAdmins } from '../lib/adminNotifications';
 
 async function notifyUser(
   db: FirebaseFirestore.Firestore,
@@ -15,7 +16,9 @@ async function notifyUser(
     createdBy: string;
   }
 ): Promise<void> {
-  const inboxRef = db.collection('userNotifications').doc(userId).collection('inbox').doc();
+  const { getFirestore, FieldValue } = await import('firebase-admin/firestore');
+  const dbRef = getFirestore();
+  const inboxRef = dbRef.collection('userNotifications').doc(userId).collection('inbox').doc();
   await inboxRef.set({
     ...notification,
     notificationId: inboxRef.id,
@@ -24,7 +27,7 @@ async function notifyUser(
     createdAt: FieldValue.serverTimestamp(),
   });
 
-  const userDoc = await db.collection('users').doc(userId).get();
+  const userDoc = await dbRef.collection('users').doc(userId).get();
   const userData = userDoc.data();
   const tokens: string[] = userData?.fcmTokens || [];
   if (tokens.length === 0) return;
@@ -51,72 +54,6 @@ async function notifyUser(
   }
 }
 
-async function notifyAdmins(
-  db: FirebaseFirestore.Firestore,
-  messaging: ReturnType<typeof getMessaging>,
-  notification: {
-    type: string;
-    title: string;
-    message: string;
-    incidenceId: string;
-    urgency: 'normal' | 'urgent';
-    createdBy: string;
-  }
-): Promise<void> {
-  const adminsSnapshot = await db.collection('users').where('role', '==', 'admin').get();
-  if (adminsSnapshot.empty) return;
-
-  const batchLimit = 500;
-  let batch = db.batch();
-  let count = 0;
-
-  for (const adminDoc of adminsSnapshot.docs) {
-    const adminId = adminDoc.id;
-    const inboxRef = db.collection('userNotifications').doc(adminId).collection('inbox').doc();
-    batch.set(inboxRef, {
-      ...notification,
-      notificationId: inboxRef.id,
-      read: false,
-      dismissed: false,
-      createdAt: FieldValue.serverTimestamp(),
-    });
-    count++;
-    if (count === batchLimit) {
-      await batch.commit();
-      batch = db.batch();
-      count = 0;
-    }
-  }
-  if (count > 0) await batch.commit();
-
-  const fcmPromises = adminsSnapshot.docs.map(async (adminDoc) => {
-    const adminData = adminDoc.data();
-    const tokens: string[] = adminData.fcmTokens || [];
-    if (tokens.length === 0) return;
-    try {
-      const response = await messaging.sendEachForMulticast({
-        notification: { title: notification.title, body: notification.message },
-        data: { incidenceId: notification.incidenceId, urgency: notification.urgency, type: notification.type },
-        tokens,
-      });
-      if (response.failureCount > 0) {
-        const invalidTokens: string[] = [];
-        response.responses.forEach((resp, idx) => {
-          if (!resp.success && resp.error?.code === 'messaging/registration-token-not-registered') {
-            invalidTokens.push(tokens[idx]);
-          }
-        });
-        if (invalidTokens.length > 0) {
-          await adminDoc.ref.update({ fcmTokens: FieldValue.arrayRemove(...invalidTokens) });
-        }
-      }
-    } catch (err) {
-      console.error(`FCM send error for admin ${adminDoc.id}:`, err);
-    }
-  });
-  await Promise.allSettled(fcmPromises);
-}
-
 export async function handleCommentCreated(event: {
   data?: { data: () => Record<string, unknown> | undefined };
   params: { incidenceId: string; commentId: string };
@@ -137,7 +74,6 @@ export async function handleCommentCreated(event: {
   const db = getFirestore();
   const messaging = getMessaging();
 
-  // Obtener incidencia padre
   const incidenceDoc = await db.collection('incidences').doc(incidenceId).get();
   if (!incidenceDoc.exists) {
     console.log('Incidence not found for comment');
@@ -152,9 +88,8 @@ export async function handleCommentCreated(event: {
   const text = String(commentData.text || '');
   const reportedBy = incidence.reportedBy;
 
-  // Si el autor es el reportador → notificar a admins
   if (authorId === reportedBy) {
-    await notifyAdmins(db, messaging, {
+    await notifyAdmins(db, messaging, 'commentAdded', {
       type: 'comment',
       title: `Nuevo comentario: ${incidence.title}`,
       message: `${authorName}: ${text.substring(0, 150)}`,
@@ -165,7 +100,6 @@ export async function handleCommentCreated(event: {
     return;
   }
 
-  // Si el autor es otro (admin) → notificar al reportador
   await notifyUser(db, messaging, reportedBy, {
     type: 'comment',
     title: `Nuevo comentario en tu incidencia: ${incidence.title}`,

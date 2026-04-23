@@ -3,25 +3,25 @@
 import { useEffect, useState } from 'react';
 import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
 import { getClientFirestore } from '@/lib/firebase';
-import type { User } from '@/types';
+import type { Contractor } from '@/types';
 
-export function useUsers() {
-  const [users, setUsers] = useState<User[]>([]);
+export function useContractors() {
+  const [contractors, setContractors] = useState<Contractor[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const db = getClientFirestore();
-    const q = query(collection(db, 'users'), orderBy('displayName'));
+    const q = query(collection(db, 'contractors'), orderBy('name'));
 
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
         const list = snapshot.docs.map((docSnap) => ({
-          uid: docSnap.id,
+          id: docSnap.id,
           ...docSnap.data(),
-        })) as User[];
-        setUsers(list);
+        })) as Contractor[];
+        setContractors(list);
         setLoading(false);
         setError(null);
       },
@@ -34,5 +34,5 @@ export function useUsers() {
     return () => unsubscribe();
   }, []);
 
-  return { users, loading, error };
+  return { contractors, loading, error };
 }

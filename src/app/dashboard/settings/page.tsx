@@ -3,10 +3,16 @@
 import { useState } from 'react';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { CountersManager } from '@/features/admin/components/CountersManager';
-import { Calculator } from 'lucide-react';
+import { ContractorsManager } from '@/features/admin/components/ContractorsManager';
+import { UsersManager } from '@/features/admin/components/UsersManager';
+import { AdminNotificationsSettings } from '@/features/admin/components/AdminNotificationsSettings';
+import { Calculator, Users, HardHat, Bell } from 'lucide-react';
 
 const settingsSections = [
   { id: 'counters', label: 'Contadores', icon: Calculator },
+  { id: 'contractors', label: 'Contratistas', icon: HardHat },
+  { id: 'users', label: 'Usuarios', icon: Users },
+  { id: 'notifications', label: 'Notificaciones', icon: Bell },
 ];
 
 export default function SettingsPage() {
@@ -65,6 +71,9 @@ export default function SettingsPage() {
           {/* Content */}
           <div className="md:col-span-3">
             {activeSection === 'counters' && <CountersManager />}
+            {activeSection === 'contractors' && <ContractorsManager />}
+            {activeSection === 'users' && <UsersManager />}
+            {activeSection === 'notifications' && <AdminNotificationsSettings />}
           </div>
         </div>
       </div>

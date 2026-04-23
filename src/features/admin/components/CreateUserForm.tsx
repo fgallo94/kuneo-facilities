@@ -36,6 +36,7 @@ export function CreateUserForm({
       firstName: '',
       lastName: '',
       email: '',
+      phone: '',
       role: 'user',
     },
   });
@@ -106,6 +107,20 @@ export function CreateUserForm({
           />
           {errors.email && (
             <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>
+          )}
+        </div>
+
+        <div>
+          <Label htmlFor="phone">Teléfono (opcional)</Label>
+          <Input
+            id="phone"
+            type="tel"
+            placeholder="+34 600 000 000"
+            {...register('phone')}
+            className="mt-1"
+          />
+          {errors.phone && (
+            <p className="mt-1 text-xs text-red-600">{errors.phone.message}</p>
           )}
         </div>
 

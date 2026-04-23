@@ -119,7 +119,7 @@ service cloud.firestore {
           && request.resource.data.keys().hasAll(['changedBy', 'changeType', 'timestamp'])
           && request.resource.data.changedBy == request.auth.uid
           && request.resource.data.changeType is string
-          && request.resource.data.changeType in ['status', 'field', 'comment', 'creation', 'conformity']
+          && request.resource.data.changeType in ['status', 'field', 'comment', 'creation', 'conformity', 'contractor']
           && request.resource.data.timestamp is timestamp
           && (
             request.resource.data.changeType != 'comment'
@@ -144,6 +144,11 @@ service cloud.firestore {
     }
 
     match /counters/{counterId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /contractors/{contractorId} {
       allow read: if isAuthenticated();
       allow write: if isAdmin();
     }

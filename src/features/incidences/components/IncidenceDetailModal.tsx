@@ -12,14 +12,18 @@ import { useUsers } from '@/features/dashboard/hooks/useUsers';
 import { useInstallations } from '@/features/dashboard/hooks/useInstallations';
 import { useUpdateIncidence } from '@/features/dashboard/hooks/useUpdateIncidence';
 import { useSendInvoiceEmail } from '../hooks/useSendInvoiceEmail';
+import { useSendToContractor } from '../hooks/useSendToContractor';
+import { useSendWhatsApp } from '../hooks/useSendWhatsApp';
 import { useConformityAction } from '../hooks/useConformityAction';
 import { PhotoUploader } from './PhotoUploader';
 import { EditIncidenceModal } from '@/features/dashboard/components/EditIncidenceModal';
 import { CommentPhotoDialog } from './CommentPhotoDialog';
 import { ImageLightbox } from './ImageLightbox';
 import { InvoiceDialog } from './InvoiceDialog';
+import { SendToContractorModal } from './SendToContractorModal';
 import { formatRelativeTime } from '@/lib/formatRelativeTime';
-import { Timestamp } from 'firebase/firestore';
+import { Timestamp, doc, collection, serverTimestamp, setDoc } from 'firebase/firestore';
+import { getClientFirestore } from '@/lib/firebase';
 import type { IncidenceHistory } from '@/types';
 import {
   getPublicStatus,
@@ -108,6 +112,13 @@ function formatHistoryEntry(entry: IncidenceHistory, isAdmin: boolean): { title:
     }
     return { title: `${name} actualizó un campo`, subtitle: `"${entry.field ?? 'desconocido'}" : ${entry.oldValue ?? '-'} → ${entry.newValue ?? '-'}` };
   }
+  if (entry.changeType === 'contractor') {
+    const method = entry.contactMethod === 'whatsapp' ? 'WhatsApp' : 'email';
+    return {
+      title: `${name} envió incidencia a contratista`,
+      subtitle: `${entry.contractorName} vía ${method}${entry.extraContext ? ` · ${entry.extraContext.slice(0, 60)}${entry.extraContext.length > 60 ? '...' : ''}` : ''}`,
+    };
+  }
   return { title: `${name} actualizó un campo`, subtitle: `"${entry.field ?? 'desconocido'}" : ${entry.oldValue ?? '-'} → ${entry.newValue ?? '-'}` };
 }
 
@@ -154,6 +165,8 @@ export function IncidenceDetailModal({
   const { installations } = useInstallations();
   const { updateIncidence, isLoading: isUpdating } = useUpdateIncidence();
   const { sendInvoiceEmail } = useSendInvoiceEmail();
+  const { sendContractorEmail } = useSendToContractor();
+  const { sendWhatsApp } = useSendWhatsApp();
 
   const [editing, setEditing] = useState(false);
   const [commentText, setCommentText] = useState('');
@@ -168,6 +181,9 @@ export function IncidenceDetailModal({
   const [showInvoiceDialog, setShowInvoiceDialog] = useState(false);
   const [invoiceProcessing, setInvoiceProcessing] = useState(false);
   const [invoiceResult, setInvoiceResult] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [showContractorDialog, setShowContractorDialog] = useState(false);
+  const [contractorProcessing, setContractorProcessing] = useState(false);
+  const [contractorResult, setContractorResult] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   const { acceptRepair, rejectRepair, isLoading: conformityLoading, error: conformityError } = useConformityAction();
 
@@ -707,6 +723,14 @@ export function IncidenceDetailModal({
                 >
                   Cambiar estado
                 </button>
+                {(incidence.status === 'Reportada' || incidence.status === 'En reparación') && (
+                  <button
+                    onClick={() => setShowContractorDialog(true)}
+                    className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                  >
+                    Enviar a contratista
+                  </button>
+                )}
                 {incidence.status === 'A facturar' && !incidence.invoiceData && (
                   <button
                     onClick={() => setShowInvoiceDialog(true)}
@@ -1037,6 +1061,111 @@ export function IncidenceDetailModal({
                 <p className="text-xs text-red-600">{invoiceResult?.message}</p>
                 <button
                   onClick={() => setInvoiceResult(null)}
+                  className="rounded-md bg-charcoal px-4 py-2 text-sm font-medium text-white hover:bg-charcoal-light"
+                >
+                  Cerrar
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Contractor Dialog */}
+      {incidence && (
+        <SendToContractorModal
+          incidence={incidence}
+          open={showContractorDialog}
+          onClose={() => setShowContractorDialog(false)}
+          onConfirm={async (payload) => {
+            setContractorProcessing(true);
+            setShowContractorDialog(false);
+            try {
+              const images = payload.includeImages ? incidence.imageUrls : [];
+              if (payload.contactMethod === 'email') {
+                await sendContractorEmail({
+                  incidenceId: incidence.id,
+                  contractorId: payload.contractorId,
+                  contractorEmail: payload.contractorEmail,
+                  contractorName: payload.contractorName,
+                  contractorPhone: payload.contractorPhone,
+                  extraContext: payload.extraContext,
+                  imageUrls: images,
+                });
+              } else {
+                // WhatsApp: enviar via Twilio
+                const messageLines = [
+                  `Hola ${payload.contractorName},`,
+                  '',
+                  `Se te ha asignado una nueva incidencia: ${incidence.title}`,
+                  `Descripción: ${incidence.description}`,
+                  payload.extraContext ? `Contexto adicional: ${payload.extraContext}` : '',
+                  images.length > 0 ? `Evidencias: ${images.join('\n')}` : '',
+                ].filter(Boolean);
+                await sendWhatsApp({
+                  to: payload.contractorPhone,
+                  body: messageLines.join('\n'),
+                });
+
+                const db = getClientFirestore();
+                const historyRef = doc(collection(db, 'incidences', incidence.id, 'history'));
+                await setDoc(historyRef, {
+                  changedBy: user?.uid,
+                  changedByName: user?.displayName || user?.email || 'Usuario',
+                  changeType: 'contractor',
+                  contractorId: payload.contractorId,
+                  contractorName: payload.contractorName,
+                  contractorEmail: payload.contractorEmail,
+                  contractorPhone: payload.contractorPhone,
+                  contactMethod: 'whatsapp',
+                  extraContext: payload.extraContext || null,
+                  timestamp: serverTimestamp(),
+                });
+              }
+              setContractorResult({ type: 'success', message: payload.contactMethod === 'email' ? 'Email enviado correctamente al contratista.' : 'WhatsApp enviado correctamente al contratista.' });
+            } catch (err) {
+              const msg = err instanceof Error ? err.message : 'Error al enviar al contratista';
+              setContractorResult({ type: 'error', message: msg });
+            } finally {
+              setContractorProcessing(false);
+            }
+          }}
+          isLoading={contractorProcessing}
+        />
+      )}
+
+      {/* Contractor Processing / Result Modal */}
+      {(contractorProcessing || contractorResult) && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-sm overflow-hidden rounded-xl bg-white p-6 shadow-xl">
+            {contractorProcessing ? (
+              <div className="flex flex-col items-center gap-3 py-4">
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-300 border-t-brand" />
+                <p className="text-sm font-medium text-charcoal">Enviando a contratista...</p>
+                <p className="text-xs text-gray-500">Por favor no cierres esta ventana</p>
+              </div>
+            ) : contractorResult?.type === 'success' ? (
+              <div className="flex flex-col items-center gap-3 py-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
+                  <CheckCircle2 className="h-6 w-6 text-green-600" />
+                </div>
+                <p className="text-sm font-medium text-charcoal">{contractorResult.message}</p>
+                <button
+                  onClick={() => setContractorResult(null)}
+                  className="rounded-md bg-charcoal px-4 py-2 text-sm font-medium text-white hover:bg-charcoal-light"
+                >
+                  Aceptar
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-3 py-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+                  <XCircle className="h-6 w-6 text-red-600" />
+                </div>
+                <p className="text-sm font-medium text-charcoal">Error al enviar a contratista</p>
+                <p className="text-xs text-red-600">{contractorResult?.message}</p>
+                <button
+                  onClick={() => setContractorResult(null)}
                   className="rounded-md bg-charcoal px-4 py-2 text-sm font-medium text-white hover:bg-charcoal-light"
                 >
                   Cerrar
