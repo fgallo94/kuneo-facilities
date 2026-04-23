@@ -9,7 +9,7 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 import { getClientAuth, getClientFirestore } from '@/lib/firebase';
-import type { Incidence, IncidenceHistory, IncidenceStatus } from '@/types';
+import type { Incidence, IncidenceHistory, IncidenceStatus, InvoiceData } from '@/types';
 
 export interface IncidenceUpdatePayload {
   title?: string;
@@ -24,6 +24,7 @@ export interface IncidenceUpdatePayload {
   conformityImageUrls?: string[];
   repairEvidenceImageUrls?: string[];
   repairEvidenceComment?: string;
+  invoiceData?: InvoiceData;
 }
 
 export function useUpdateIncidence() {
@@ -74,6 +75,15 @@ export function useUpdateIncidence() {
               changeType: 'conformity',
               oldValue: String(oldValue ?? ''),
               newValue: String(newValue),
+            });
+          } else if (key === 'invoiceData') {
+            historyEntries.push({
+              changedBy: user.uid,
+              changedByName,
+              changeType: 'field',
+              field: 'invoiceData',
+              oldValue: oldValue ? 'Con factura' : 'Sin factura',
+              newValue: 'Factura generada',
             });
           } else {
             historyEntries.push({

@@ -22,15 +22,14 @@ Finish:
 #### En Kanban el Aceptado o Rechazado
 #### Al cambiar de estado a Reparado tiene que permitir agregar evidencias.
 #### Fotos en comentarios de incidencias.
-
-In Progress:
 #### Buscador de incidencias en menu lateral por resueltas, con filtros de franja de tiempo
+#### Menu Lateral tablero por marca
+#### A facturar, datos de incidencia, enviar a contaduria, con monto y concepto.
+In Progress:
 
 
 
+### Añadir componentes para enviar por  mail
 
 
 To do:
-#### Filtro rapido en Kanban por Grupo-propiedad-instalacion.
-#### Menu Lateral tablero por marca
-#### A facturar, datos de incidencia, enviar a contaduria, con monto y concepto.

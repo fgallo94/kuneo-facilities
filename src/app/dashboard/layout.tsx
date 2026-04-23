@@ -15,6 +15,7 @@ import {
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { DashboardHeader } from './components/DashboardHeader';
+import { SidebarIncidencesNav } from './components/SidebarIncidencesNav';
 import { Logo } from '@/components/ui/Logo';
 import { IncidenceDetailProvider, useIncidenceDetailContext } from '@/features/incidences/context/IncidenceDetailContext';
 import { IncidenceDetailModal } from '@/features/incidences/components/IncidenceDetailModal';
@@ -24,10 +25,16 @@ const userNavItems = [
   { label: 'Incidencias', href: '/dashboard/incidences/new', icon: FileText },
 ];
 
-const adminNavItems = [
+const adminStaticItems = [
+  { label: 'Panel', href: '/dashboard', icon: LayoutDashboard },
+  { label: 'Buscador Incidencias', href: '/dashboard/incidences/directory', icon: Search },
+  { label: 'Admin', href: '/dashboard/admin', icon: Shield },
+];
+
+const adminMobileItems = [
   { label: 'Panel', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Incidencias', href: '/dashboard/incidences', icon: FileText },
-  { label: 'Buscador Incidencias', href: '/dashboard/incidences/directory', icon: Search },
+  { label: 'Buscador', href: '/dashboard/incidences/directory', icon: Search },
   { label: 'Admin', href: '/dashboard/admin', icon: Shield },
 ];
 
@@ -43,8 +50,12 @@ function DashboardLayoutInner({
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
   const isAdmin = user?.role === 'admin';
-  const navItems = React.useMemo(
-    () => (isAdmin ? adminNavItems : userNavItems),
+  const desktopNavItems = React.useMemo(
+    () => (isAdmin ? adminStaticItems : userNavItems),
+    [isAdmin]
+  );
+  const mobileNavItems = React.useMemo(
+    () => (isAdmin ? adminMobileItems : userNavItems),
     [isAdmin]
   );
 
@@ -83,8 +94,8 @@ function DashboardLayoutInner({
             </div>
           </div>
 
-          <nav className="flex-1 space-y-1 px-4">
-            {navItems.map((item) => {
+          <nav className="flex-1 space-y-1 overflow-y-auto px-4">
+            {desktopNavItems.map((item) => {
               const active = pathname === item.href;
               return (
                 <Link
@@ -102,6 +113,7 @@ function DashboardLayoutInner({
                 </Link>
               );
             })}
+            {isAdmin && <SidebarIncidencesNav />}
           </nav>
 
           <div className="border-t border-gray-100 p-4">
@@ -134,7 +146,7 @@ function DashboardLayoutInner({
       {!isDesktop && mobileMenuOpen && (
         <div className="fixed inset-0 z-20 bg-white pt-14">
           <nav className="space-y-1 px-4 py-4">
-            {navItems.map((item) => {
+            {mobileNavItems.map((item) => {
               const active = pathname === item.href;
               return (
                 <Link
@@ -153,6 +165,7 @@ function DashboardLayoutInner({
                 </Link>
               );
             })}
+            {isAdmin && <SidebarIncidencesNav />}
             <button
               onClick={() => {
                 setMobileMenuOpen(false);
@@ -182,7 +195,7 @@ function DashboardLayoutInner({
       {!isDesktop && (
         <nav className="fixed bottom-0 left-0 right-0 z-10 border-t border-gray-200 bg-white">
           <div className="flex items-center justify-around">
-            {navItems.map((item) => {
+            {mobileNavItems.map((item) => {
               const active = pathname === item.href;
               return (
                 <Link

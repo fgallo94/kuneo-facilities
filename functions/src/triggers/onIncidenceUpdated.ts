@@ -2,6 +2,7 @@ import * as functions from 'firebase-functions/v1';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { getMessaging } from 'firebase-admin/messaging';
 import { notificationIncidenceDataSchema } from '../schemas/notificationPayloadSchema';
+import { getPublicStatus, isAdminOnlyTransition } from '../lib/incidenceVisibility';
 
 async function notifyUser(
   db: FirebaseFirestore.Firestore,
@@ -202,12 +203,23 @@ export async function handleIncidenceUpdated(event: {
       return;
     }
 
-    // Otros cambios de estado por admin → notificar al usuario reportador
+    // Otros cambios de estado por admin
     if (isAdminAction) {
+      // Si la transición es puramente administrativa, no molestar al usuario
+      if (isAdminOnlyTransition(beforeInc.status, afterInc.status)) {
+        console.log(
+          `Admin-only transition ${beforeInc.status} → ${afterInc.status} for incidence ${incidenceId}. Skipping user notification.`
+        );
+        return;
+      }
+
+      // Notificar al usuario con estados públicos simplificados
+      const publicFrom = getPublicStatus(beforeInc.status);
+      const publicTo = getPublicStatus(afterInc.status);
       await notifyUser(db, messaging, afterInc.reportedBy, {
         type: 'status_change',
-        title: `Cambio de estado: ${afterInc.title}`,
-        message: `La incidencia pasó de "${beforeInc.status}" a "${afterInc.status}".`,
+        title: `Actualización: ${afterInc.title}`,
+        message: `La incidencia pasó de "${publicFrom}" a "${publicTo}".`,
         incidenceId,
         urgency: afterInc.urgency === 'urgent' ? 'urgent' : 'normal',
         createdBy: updatedBy,

@@ -64,6 +64,7 @@ describe('Firestore Rules: Comments (Emulator)', () => {
 
     const adminCredential = await createUserWithEmailAndPassword(adminAuth, 'admin@kuneo.app', 'AdminPass123!');
     await setCustomClaims(adminCredential.user.uid, { role: 'admin' });
+    await signInWithEmailAndPassword(adminAuth, 'admin@kuneo.app', 'AdminPass123!');
 
     const userAuth = getTestEmulatorAuth();
     const userCredential = await createUserWithEmailAndPassword(userAuth, 'user@kuneo.app', 'TestPass123!');
@@ -95,6 +96,7 @@ describe('Firestore Rules: Comments (Emulator)', () => {
 
     const adminCredential = await createUserWithEmailAndPassword(adminAuth, 'admin@kuneo.app', 'AdminPass123!');
     await setCustomClaims(adminCredential.user.uid, { role: 'admin' });
+    await signInWithEmailAndPassword(adminAuth, 'admin@kuneo.app', 'AdminPass123!');
 
     const userAuth = getTestEmulatorAuth();
     const userCredential = await createUserWithEmailAndPassword(userAuth, 'user@kuneo.app', 'TestPass123!');
@@ -128,6 +130,7 @@ describe('Firestore Rules: Comments (Emulator)', () => {
 
     const adminCredential = await createUserWithEmailAndPassword(adminAuth, 'admin@kuneo.app', 'AdminPass123!');
     await setCustomClaims(adminCredential.user.uid, { role: 'admin' });
+    await signInWithEmailAndPassword(adminAuth, 'admin@kuneo.app', 'AdminPass123!');
 
     const userAuth = getTestEmulatorAuth();
     const userCredential = await createUserWithEmailAndPassword(userAuth, 'user@kuneo.app', 'TestPass123!');
@@ -157,6 +160,7 @@ describe('Firestore Rules: Comments (Emulator)', () => {
 
     const adminCredential = await createUserWithEmailAndPassword(adminAuth, 'admin@kuneo.app', 'AdminPass123!');
     await setCustomClaims(adminCredential.user.uid, { role: 'admin' });
+    await signInWithEmailAndPassword(adminAuth, 'admin@kuneo.app', 'AdminPass123!');
 
     const incidenceId = await seedIncidence(adminDb, 'some_uid');
 

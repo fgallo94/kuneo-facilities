@@ -9,6 +9,8 @@ import {
 } from '@hello-pangea/dnd';
 import type { Incidence, Installation, User } from '@/types';
 import { INCIDENCE_STATUSES } from '@/types';
+
+const ACTIVE_STATUSES = INCIDENCE_STATUSES.filter((s) => s !== 'Facturada');
 import { IncidenceCard } from './IncidenceCard';
 import { RepairEvidenceDialog } from './RepairEvidenceDialog';
 import { useIncidenceDetailContext } from '@/features/incidences/context/IncidenceDetailContext';
@@ -50,7 +52,7 @@ export function IncidenceKanbanBoard({
 
   const columns = useMemo(() => {
     const map = new Map<string, Incidence[]>();
-    INCIDENCE_STATUSES.forEach((status) => map.set(status, []));
+    ACTIVE_STATUSES.forEach((status) => map.set(status, []));
     localIncidences.forEach((inc) => {
       const list = map.get(inc.status) || [];
       list.push(inc);
@@ -115,7 +117,7 @@ export function IncidenceKanbanBoard({
     <>
       <DragDropContext onDragEnd={handleDragEnd}>
         <div className="flex w-full gap-3 overflow-x-auto pb-4">
-          {INCIDENCE_STATUSES.map((status) => {
+          {ACTIVE_STATUSES.map((status) => {
             const items = columns.get(status) || [];
             return (
               <div

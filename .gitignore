@@ -88,3 +88,8 @@ public/firebase-messaging-sw.js
 # Turborepo / Monorepo tools
 .turbo
 .env.local.example
+
+# Firebase Functions env files
+functions/*.env
+functions/.env
+

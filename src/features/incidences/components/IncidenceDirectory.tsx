@@ -63,11 +63,6 @@ export function IncidenceDirectory() {
     [installations]
   );
 
-  const propertyMap = useMemo(
-    () => new Map(properties.map((p) => [p.id, p])),
-    [properties]
-  );
-
   const filteredProperties = useMemo(() => {
     if (!selectedInstallation) return properties;
     return properties.filter((p) => p.installationId === selectedInstallation);

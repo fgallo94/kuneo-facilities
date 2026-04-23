@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { handleCommentCreated } from './onCommentCreated';
 
-const mockSetDoc = vi.fn(() => Promise.resolve());
+const mockSetDoc = vi.fn<(...args: unknown[]) => Promise<void>>(() => Promise.resolve());
 const mockBatchSet = vi.fn();
 const mockBatchCommit = vi.fn();
 const mockBatch = vi.fn(() => ({ set: mockBatchSet, commit: mockBatchCommit }));

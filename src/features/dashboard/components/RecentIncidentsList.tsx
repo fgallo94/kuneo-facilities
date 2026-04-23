@@ -38,6 +38,7 @@ const STATUS_LABELS: Record<Incidence['status'], string> = {
   Presupuestado: 'Presupuestado',
   'Falta de material': 'Falta de material',
   'A facturar': 'A facturar',
+  Facturada: 'Facturada',
 };
 
 const CATEGORY_LABELS: Record<Incidence['category'], string> = {

@@ -38,6 +38,7 @@ export const INCIDENCE_STATUSES = [
   'Presupuestado',
   'Falta de material',
   'A facturar',
+  'Facturada',
 ] as const;
 
 export type IncidenceStatus = (typeof INCIDENCE_STATUSES)[number];
@@ -102,7 +103,27 @@ export interface Incidence {
   // Evidencia de reparación (adjuntada por admin al cerrar)
   repairEvidenceImageUrls?: string[];
   repairEvidenceComment?: string;
+  // Datos de facturación
+  invoiceData?: InvoiceData;
 }
+
+export interface InvoiceData {
+  amount: number;
+  concept: string;
+  counterId: string;
+  counterName: string;
+  counterEmail: string;
+  invoicedAt: Timestamp;
+  invoicedBy: string;
+}
+
+export interface Counter {
+  id: string;
+  name: string;
+  email: string;
+  createdAt?: Timestamp;
+}
+
 
 export interface IncidenceHistory {
   id: string;

@@ -9,7 +9,7 @@ service cloud.firestore {
 
     function isAdmin() {
       return isAuthenticated() && (
-        request.auth.token.role == 'admin'
+        (request.auth.token.keys().hasAny(['role']) && request.auth.token.role == 'admin')
         || (exists(/databases/$(database)/documents/users/$(request.auth.uid))
             && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
       );
@@ -98,7 +98,7 @@ service cloud.firestore {
     match /incidences/{incidenceId} {
       allow read: if isAdmin() || isOwner(resource.data.reportedBy);
 
-      allow create: if isAuthenticated() && isValidIncidenceCreate();
+      allow create: if isAuthenticated() && (isValidIncidenceCreate() || isAdmin());
 
       allow update: if isAdmin()
         || (
@@ -141,6 +141,15 @@ service cloud.firestore {
           );
         allow update, delete: if false;
       }
+    }
+
+    match /counters/{counterId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /mail/{mailId} {
+      allow read, write: if isAdmin();
     }
 
     match /userNotifications/{userId}/inbox/{notificationId} {

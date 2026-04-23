@@ -11,13 +11,21 @@ import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useUsers } from '@/features/dashboard/hooks/useUsers';
 import { useInstallations } from '@/features/dashboard/hooks/useInstallations';
 import { useUpdateIncidence } from '@/features/dashboard/hooks/useUpdateIncidence';
+import { useSendInvoiceEmail } from '../hooks/useSendInvoiceEmail';
 import { useConformityAction } from '../hooks/useConformityAction';
 import { PhotoUploader } from './PhotoUploader';
 import { EditIncidenceModal } from '@/features/dashboard/components/EditIncidenceModal';
 import { CommentPhotoDialog } from './CommentPhotoDialog';
 import { ImageLightbox } from './ImageLightbox';
+import { InvoiceDialog } from './InvoiceDialog';
 import { formatRelativeTime } from '@/lib/formatRelativeTime';
+import { Timestamp } from 'firebase/firestore';
 import type { IncidenceHistory } from '@/types';
+import {
+  getPublicStatus,
+  getPublicHistory,
+  formatPublicHistoryEntry,
+} from '../lib/incidenceVisibility';
 
 interface IncidenceDetailModalProps {
   incidenceId: string;
@@ -44,6 +52,7 @@ const STATUS_STYLES: Record<string, string> = {
   Presupuestado: 'bg-purple-100 text-purple-700',
   'Falta de material': 'bg-pink-100 text-pink-700',
   'A facturar': 'bg-green-100 text-green-800 border border-green-200',
+  Facturada: 'bg-blue-100 text-blue-800 border border-blue-200',
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -63,7 +72,10 @@ function getUrgencyFromSeverity(severity: number, urgency?: string): string {
   return 'normal';
 }
 
-function formatHistoryEntry(entry: IncidenceHistory): { title: string; subtitle?: string } {
+function formatHistoryEntry(entry: IncidenceHistory, isAdmin: boolean): { title: string; subtitle?: string } | null {
+  if (!isAdmin) {
+    return formatPublicHistoryEntry(entry);
+  }
   const name = entry.changedByName || 'Usuario';
   if (entry.changeType === 'creation') {
     return { title: `${name} reportó la incidencia` };
@@ -141,6 +153,7 @@ export function IncidenceDetailModal({
   const { users } = useUsers();
   const { installations } = useInstallations();
   const { updateIncidence, isLoading: isUpdating } = useUpdateIncidence();
+  const { sendInvoiceEmail } = useSendInvoiceEmail();
 
   const [editing, setEditing] = useState(false);
   const [commentText, setCommentText] = useState('');
@@ -152,6 +165,9 @@ export function IncidenceDetailModal({
   const [rejectPhotos, setRejectPhotos] = useState<File[]>([]);
   const [showCommentPhoto, setShowCommentPhoto] = useState(false);
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+  const [showInvoiceDialog, setShowInvoiceDialog] = useState(false);
+  const [invoiceProcessing, setInvoiceProcessing] = useState(false);
+  const [invoiceResult, setInvoiceResult] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   const { acceptRepair, rejectRepair, isLoading: conformityLoading, error: conformityError } = useConformityAction();
 
@@ -234,6 +250,7 @@ export function IncidenceDetailModal({
   const urgencyKey = getUrgencyFromSeverity(incidence.severity, incidence.urgency);
   const urgencyLabel = URGENCY_LABELS[urgencyKey] ?? 'Normal';
   const urgencyStyle = URGENCY_STYLES[urgencyKey] ?? URGENCY_STYLES.normal;
+  const displayStatus = isAdmin ? incidence.status : getPublicStatus(incidence.status);
   const statusStyle = STATUS_STYLES[incidence.status] ?? 'bg-gray-100 text-gray-700';
 
   const creatorEntry = history.find((h) => h.changeType === 'creation');
@@ -271,18 +288,22 @@ export function IncidenceDetailModal({
     : '';
 
   // Build timeline from history (ascending order). Fallback to creation stub for legacy incidences without history.
-  const timeline = history.length > 0
-    ? history.map((h) => {
-        const entry = formatHistoryEntry(h);
-        const d = normalizeTimestamp(h.timestamp);
-        return {
-          id: h.id,
-          text: entry.title,
-          subtitle: entry.subtitle,
-          detail: d ? `${formatDate(d)} a las ${formatTime(d)}` : '',
-          isInitial: h.changeType === 'creation',
-        };
-      })
+  const visibleHistory = isAdmin ? history : getPublicHistory(history);
+  const timeline = visibleHistory.length > 0
+    ? visibleHistory
+        .map((h) => {
+          const entry = formatHistoryEntry(h, isAdmin);
+          if (!entry) return null;
+          const d = normalizeTimestamp(h.timestamp);
+          return {
+            id: h.id,
+            text: entry.title,
+            subtitle: entry.subtitle,
+            detail: d ? `${formatDate(d)} a las ${formatTime(d)}` : '',
+            isInitial: h.changeType === 'creation',
+          };
+        })
+        .filter((item): item is NonNullable<typeof item> => item !== null)
     : [
         {
           id: 'created',
@@ -311,7 +332,7 @@ export function IncidenceDetailModal({
                 <span
                   className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${statusStyle}`}
                 >
-                  {incidence.status}
+                  {displayStatus}
                 </span>
                 <span
                   className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${urgencyStyle}`}
@@ -357,9 +378,11 @@ export function IncidenceDetailModal({
                     <span className="rounded-md bg-gray-100 px-2 py-1">
                       Categoría: {CATEGORY_LABELS[incidence.category] ?? incidence.category}
                     </span>
-                    <span className="rounded-md bg-gray-100 px-2 py-1">
-                      Facturar a: {incidence.billTo}
-                    </span>
+                    {isAdmin && (
+                      <span className="rounded-md bg-gray-100 px-2 py-1">
+                        Facturar a: {incidence.billTo}
+                      </span>
+                    )}
                     <span className="rounded-md bg-gray-100 px-2 py-1">
                       Severidad: {incidence.severity}/5
                     </span>
@@ -487,55 +510,57 @@ export function IncidenceDetailModal({
                     </>
                   )}
 
-                  {/* Add Comment */}
-                  <div className="mt-2 space-y-2">
-                    {commentError && (
-                      <div className="rounded-md bg-red-50 px-3 py-2 text-xs text-red-700">
-                        {commentError}
+                  {/* Add Comment — disabled when billed */}
+                  {incidence.status !== 'Facturada' && (
+                    <div className="mt-2 space-y-2">
+                      {commentError && (
+                        <div className="rounded-md bg-red-50 px-3 py-2 text-xs text-red-700">
+                          {commentError}
+                        </div>
+                      )}
+                      <div className="flex items-end gap-2">
+                        <textarea
+                          value={commentText}
+                          onChange={(e) => {
+                            setCommentText(e.target.value);
+                            if (commentError) clearCommentError();
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                              e.preventDefault();
+                              handleSubmitComment(undefined, undefined);
+                            }
+                          }}
+                          placeholder="Escribe un comentario..."
+                          rows={2}
+                          className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+                        />
+                        <button
+                          onClick={() => handleSubmitComment(undefined, undefined)}
+                          disabled={!commentText.trim() || addingComment}
+                          className="flex min-w-[5.5rem] items-center justify-center gap-1 rounded-md bg-charcoal px-3 py-2 text-sm font-medium text-white hover:bg-charcoal-light disabled:opacity-50"
+                        >
+                          {addingComment ? (
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                          ) : (
+                            <>
+                              <Send className="h-4 w-4" />
+                              Enviar
+                            </>
+                          )}
+                        </button>
+                        <button
+                          onClick={() => setShowCommentPhoto(true)}
+                          disabled={addingComment}
+                          className="flex items-center justify-center gap-1 rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                          title="Adjuntar foto"
+                        >
+                          <ImageIcon className="h-4 w-4" />
+                          <span className="hidden sm:inline">Foto</span>
+                        </button>
                       </div>
-                    )}
-                    <div className="flex items-end gap-2">
-                      <textarea
-                        value={commentText}
-                        onChange={(e) => {
-                          setCommentText(e.target.value);
-                          if (commentError) clearCommentError();
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            handleSubmitComment(undefined, undefined);
-                          }
-                        }}
-                        placeholder="Escribe un comentario..."
-                        rows={2}
-                        className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-brand focus:ring-1 focus:ring-brand"
-                      />
-                      <button
-                        onClick={() => handleSubmitComment(undefined, undefined)}
-                        disabled={!commentText.trim() || addingComment}
-                        className="flex min-w-[5.5rem] items-center justify-center gap-1 rounded-md bg-charcoal px-3 py-2 text-sm font-medium text-white hover:bg-charcoal-light disabled:opacity-50"
-                      >
-                        {addingComment ? (
-                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                        ) : (
-                          <>
-                            <Send className="h-4 w-4" />
-                            Enviar
-                          </>
-                        )}
-                      </button>
-                      <button
-                        onClick={() => setShowCommentPhoto(true)}
-                        disabled={addingComment}
-                        className="flex items-center justify-center gap-1 rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-                        title="Adjuntar foto"
-                      >
-                        <ImageIcon className="h-4 w-4" />
-                        <span className="hidden sm:inline">Foto</span>
-                      </button>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
 
@@ -674,7 +699,7 @@ export function IncidenceDetailModal({
             >
               Cerrar
             </button>
-            {isAdmin && (
+            {isAdmin && incidence.status !== 'Facturada' && (
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setEditing(true)}
@@ -682,6 +707,14 @@ export function IncidenceDetailModal({
                 >
                   Cambiar estado
                 </button>
+                {incidence.status === 'A facturar' && !incidence.invoiceData && (
+                  <button
+                    onClick={() => setShowInvoiceDialog(true)}
+                    className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+                  >
+                    Facturar
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -934,6 +967,84 @@ export function IncidenceDetailModal({
           }}
           isLoading={isUpdating}
         />
+      )}
+
+      {/* Invoice Dialog */}
+      {incidence && (
+        <InvoiceDialog
+          incidence={incidence}
+          open={showInvoiceDialog}
+          onClose={() => setShowInvoiceDialog(false)}
+          onConfirm={async (payload) => {
+            setInvoiceProcessing(true);
+            setShowInvoiceDialog(false);
+            try {
+              await updateIncidence(incidence, {
+                invoiceData: {
+                  ...payload,
+                  invoicedAt: Timestamp.now(),
+                  invoicedBy: user?.uid ?? '',
+                },
+              });
+              await sendInvoiceEmail({
+                incidenceId: incidence.id,
+                counterEmail: payload.counterEmail,
+                counterName: payload.counterName,
+                amount: payload.amount,
+                concept: payload.concept,
+              });
+              setInvoiceResult({ type: 'success', message: 'Factura enviada correctamente al contador.' });
+            } catch (err) {
+              const msg = err instanceof Error ? err.message : 'Error al enviar la factura';
+              setInvoiceResult({ type: 'error', message: msg });
+            } finally {
+              setInvoiceProcessing(false);
+            }
+          }}
+          isLoading={isUpdating}
+        />
+      )}
+
+      {/* Invoice Processing / Result Modal */}
+      {(invoiceProcessing || invoiceResult) && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-sm overflow-hidden rounded-xl bg-white p-6 shadow-xl">
+            {invoiceProcessing ? (
+              <div className="flex flex-col items-center gap-3 py-4">
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-300 border-t-brand" />
+                <p className="text-sm font-medium text-charcoal">Enviando factura...</p>
+                <p className="text-xs text-gray-500">Por favor no cierres esta ventana</p>
+              </div>
+            ) : invoiceResult?.type === 'success' ? (
+              <div className="flex flex-col items-center gap-3 py-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
+                  <CheckCircle2 className="h-6 w-6 text-green-600" />
+                </div>
+                <p className="text-sm font-medium text-charcoal">{invoiceResult.message}</p>
+                <button
+                  onClick={() => setInvoiceResult(null)}
+                  className="rounded-md bg-charcoal px-4 py-2 text-sm font-medium text-white hover:bg-charcoal-light"
+                >
+                  Aceptar
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-3 py-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+                  <XCircle className="h-6 w-6 text-red-600" />
+                </div>
+                <p className="text-sm font-medium text-charcoal">Error al enviar factura</p>
+                <p className="text-xs text-red-600">{invoiceResult?.message}</p>
+                <button
+                  onClick={() => setInvoiceResult(null)}
+                  className="rounded-md bg-charcoal px-4 py-2 text-sm font-medium text-white hover:bg-charcoal-light"
+                >
+                  Cerrar
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       )}
 
       <ImageLightbox

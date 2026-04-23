@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useIncidenceDetailContext } from '@/features/incidences/context/IncidenceDetailContext';
 import { Settings, User } from 'lucide-react';
+import Link from 'next/link';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useAllIncidences } from '@/features/dashboard/hooks/useAllIncidences';
 import { useNotifications } from '@/features/notifications/hooks/useNotifications';
@@ -45,6 +46,7 @@ export function DashboardHeader() {
     notification: UserNotification | null;
   }>({ open: false, notification: null });
 
+
   const handleDismissRequest = (id: string, urgency: 'normal' | 'urgent') => {
     const notification = notifications.find((n) => n.id === id);
     if (!notification) return;
@@ -85,12 +87,15 @@ export function DashboardHeader() {
             onSelect={handleNotificationSelect}
           />
 
-          <button
-            className="rounded-full p-2 text-gray-600 transition-colors hover:bg-gray-100 hover:text-charcoal"
-            aria-label="Configuración"
-          >
-            <Settings className="h-5 w-5" />
-          </button>
+          {isAdmin && (
+            <Link
+              href="/dashboard/settings"
+              className="rounded-full p-2 text-gray-600 transition-colors hover:bg-gray-100 hover:text-charcoal"
+              aria-label="Configuración"
+            >
+              <Settings className="h-5 w-5" />
+            </Link>
+          )}
 
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand text-xs font-bold text-charcoal">
             {user?.displayName
@@ -121,6 +126,8 @@ export function DashboardHeader() {
         onCancel={() => setConfirmModal({ open: false, notification: null })}
         isLoading={dismissLoading}
       />
+
+
     </div>
   );
 }

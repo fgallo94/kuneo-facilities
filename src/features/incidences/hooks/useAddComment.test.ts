@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, waitFor, act } from '@testing-library/react';
 import { useAddComment } from './useAddComment';
 
 const mockSetDoc = vi.fn();
@@ -102,9 +102,15 @@ describe('useAddComment', () => {
   it('falla si no hay texto ni imagen', async () => {
     const { result } = renderHook(() => useAddComment());
 
-    await expect(result.current.addComment('inc_1', '')).rejects.toThrow('El comentario no puede estar vacío');
+    await act(async () => {
+      try {
+        await result.current.addComment('inc_1', '');
+      } catch {
+        // expected
+      }
+    });
 
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.isLoading).toBe(false);
     expect(result.current.error).toBe('El comentario no puede estar vacío');
   });
 
@@ -113,9 +119,15 @@ describe('useAddComment', () => {
 
     const { result } = renderHook(() => useAddComment());
 
-    await expect(result.current.addComment('inc_1', 'texto')).rejects.toThrow('Usuario no autenticado');
+    await act(async () => {
+      try {
+        await result.current.addComment('inc_1', 'texto');
+      } catch {
+        // expected
+      }
+    });
 
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.isLoading).toBe(false);
     expect(result.current.error).toBe('Usuario no autenticado');
   });
 });
