@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   FileText,
   Shield,
+  Search,
   LogOut,
   Menu,
   X,
@@ -26,6 +27,7 @@ const userNavItems = [
 const adminNavItems = [
   { label: 'Panel', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Incidencias', href: '/dashboard/incidences', icon: FileText },
+  { label: 'Buscador Incidencias', href: '/dashboard/incidences/directory', icon: Search },
   { label: 'Admin', href: '/dashboard/admin', icon: Shield },
 ];
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
-import { X, Send, CheckCircle2, XCircle } from 'lucide-react';
+import { X, Send, CheckCircle2, XCircle, Image as ImageIcon } from 'lucide-react';
 import { useIncidenceDetail } from '../hooks/useIncidenceDetail';
 import { useIncidenceHistory } from '../hooks/useIncidenceHistory';
 import { useIncidenceComments } from '../hooks/useIncidenceComments';
@@ -14,6 +14,8 @@ import { useUpdateIncidence } from '@/features/dashboard/hooks/useUpdateIncidenc
 import { useConformityAction } from '../hooks/useConformityAction';
 import { PhotoUploader } from './PhotoUploader';
 import { EditIncidenceModal } from '@/features/dashboard/components/EditIncidenceModal';
+import { CommentPhotoDialog } from './CommentPhotoDialog';
+import { ImageLightbox } from './ImageLightbox';
 import { formatRelativeTime } from '@/lib/formatRelativeTime';
 import type { IncidenceHistory } from '@/types';
 
@@ -148,6 +150,8 @@ export function IncidenceDetailModal({
   const [rejectReason, setRejectReason] = useState('');
   const [rejectComment, setRejectComment] = useState('');
   const [rejectPhotos, setRejectPhotos] = useState<File[]>([]);
+  const [showCommentPhoto, setShowCommentPhoto] = useState(false);
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
   const { acceptRepair, rejectRepair, isLoading: conformityLoading, error: conformityError } = useConformityAction();
 
@@ -183,11 +187,11 @@ export function IncidenceDetailModal({
     return () => document.removeEventListener('keydown', handleKey);
   }, [onClose, editing, showFullHistory, showAllComments]);
 
-  const handleSubmitComment = async () => {
-    if (!commentText.trim() || addingComment) return;
+  const handleSubmitComment = async (imageFile?: File, imageCaption?: string) => {
+    if ((!commentText.trim() && !imageFile) || addingComment) return;
     clearCommentError();
     try {
-      await addComment(incidenceId, commentText);
+      await addComment(incidenceId, commentText, imageFile, imageCaption);
       setCommentText('');
     } catch {
       // error is surfaced via commentError
@@ -296,7 +300,7 @@ export function IncidenceDetailModal({
   return (
     <>
       <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-3 pt-4 md:items-center md:pt-0">
-        <div className="flex max-h-[calc(100vh-1rem)] w-full max-w-6xl flex-col overflow-hidden rounded-xl bg-white shadow-xl">
+        <div className="flex max-h-[95vh] w-full max-w-6xl flex-col overflow-hidden rounded-xl bg-white shadow-xl">
           {/* Header */}
           <div className="bg-charcoal px-5 py-2">
             <div className="flex items-center justify-between gap-4">
@@ -362,62 +366,61 @@ export function IncidenceDetailModal({
                   </div>
                 </div>
 
-                {/* Visual Evidence */}
-                <div className="rounded-xl border border-gray-200 bg-white p-3">
-                  <h3 className="text-sm font-semibold text-gray-900">Evidencia visual</h3>
-                  {incidence.imageUrls.length === 0 ? (
-                    <p className="mt-2 text-sm text-gray-400">No hay imágenes adjuntas</p>
-                  ) : (
-                    <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                      {incidence.imageUrls.map((url, idx) => (
-                        <a
-                          key={idx}
-                          href={url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="group relative aspect-square overflow-hidden rounded-lg border border-gray-200 bg-gray-100"
-                        >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={url}
-                            alt={`Evidencia ${idx + 1}`}
-                            className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                            loading="lazy"
-                          />
-                        </a>
-                      ))}
+                {/* Evidences row */}
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                  {/* Visual Evidence */}
+                  <div className="rounded-xl border border-gray-200 bg-white p-3">
+                    <h3 className="text-sm font-semibold text-gray-900">Evidencia visual</h3>
+                    {incidence.imageUrls.length === 0 ? (
+                      <p className="mt-2 text-sm text-gray-400">No hay imágenes adjuntas</p>
+                    ) : (
+                      <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                        {incidence.imageUrls.map((url, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => setLightboxSrc(url)}
+                            className="group relative aspect-square overflow-hidden rounded-lg border border-gray-200 bg-gray-100 text-left"
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={url}
+                              alt={`Evidencia ${idx + 1}`}
+                              className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                              loading="lazy"
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Repair Evidence */}
+                  {(incidence.repairEvidenceImageUrls && incidence.repairEvidenceImageUrls.length > 0) && (
+                    <div className="rounded-xl border border-blue-200 bg-blue-50 p-3">
+                      <h3 className="text-xs font-semibold uppercase tracking-wide text-blue-700">Evidencia de la reparación</h3>
+                      {incidence.repairEvidenceComment && (
+                        <p className="mt-1 text-xs text-gray-600">{incidence.repairEvidenceComment}</p>
+                      )}
+                      <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                        {incidence.repairEvidenceImageUrls.map((url, idx) => (
+                          <button
+                            key={`repair-${idx}`}
+                            onClick={() => setLightboxSrc(url)}
+                            className="group relative aspect-square overflow-hidden rounded-lg border border-blue-200 bg-white text-left"
+                          >
+                            <Image
+                              src={url}
+                              alt={`Evidencia de reparación ${idx + 1}`}
+                              width={200}
+                              height={200}
+                              className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                            />
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
-
-                {/* Repair Evidence */}
-                {(incidence.repairEvidenceImageUrls && incidence.repairEvidenceImageUrls.length > 0) && (
-                  <div className="rounded-xl border border-blue-200 bg-blue-50 p-3">
-                    <h3 className="text-xs font-semibold uppercase tracking-wide text-blue-700">Evidencia de la reparación</h3>
-                    {incidence.repairEvidenceComment && (
-                      <p className="mt-1 text-xs text-gray-600">{incidence.repairEvidenceComment}</p>
-                    )}
-                    <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                      {incidence.repairEvidenceImageUrls.map((url, idx) => (
-                        <a
-                          key={`repair-${idx}`}
-                          href={url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="group relative aspect-square overflow-hidden rounded-lg border border-blue-200 bg-white"
-                        >
-                          <Image
-                            src={url}
-                            alt={`Evidencia de reparación ${idx + 1}`}
-                            width={200}
-                            height={200}
-                            className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                          />
-                        </a>
-                      ))}
-                    </div>
-                  </div>
-                )}
 
                 {/* Comments Section */}
                 <div className="rounded-xl border border-gray-200 bg-white p-3">
@@ -449,7 +452,26 @@ export function IncidenceDetailModal({
                                   </span>
                                 )}
                               </div>
-                              <p className="mt-1 text-sm text-gray-700">{c.text}</p>
+                              {c.text && <p className="mt-1 text-sm text-gray-700">{c.text}</p>}
+                              {c.imageUrl && (
+                                <div className="mt-2">
+                                  <button
+                                    onClick={() => c.imageUrl && setLightboxSrc(c.imageUrl)}
+                                    className="group relative inline-block overflow-hidden rounded-lg border border-gray-200 text-left"
+                                  >
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                      src={c.imageUrl}
+                                      alt={c.imageCaption || 'Foto adjunta'}
+                                      className="max-h-24 w-auto object-contain transition-transform group-hover:scale-105"
+                                      loading="lazy"
+                                    />
+                                  </button>
+                                  {c.imageCaption && (
+                                    <p className="mt-1 text-xs italic text-gray-500">{c.imageCaption}</p>
+                                  )}
+                                </div>
+                              )}
                             </li>
                           );
                         })}
@@ -482,7 +504,7 @@ export function IncidenceDetailModal({
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' && !e.shiftKey) {
                             e.preventDefault();
-                            handleSubmitComment();
+                            handleSubmitComment(undefined, undefined);
                           }
                         }}
                         placeholder="Escribe un comentario..."
@@ -490,7 +512,7 @@ export function IncidenceDetailModal({
                         className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-brand focus:ring-1 focus:ring-brand"
                       />
                       <button
-                        onClick={handleSubmitComment}
+                        onClick={() => handleSubmitComment(undefined, undefined)}
                         disabled={!commentText.trim() || addingComment}
                         className="flex min-w-[5.5rem] items-center justify-center gap-1 rounded-md bg-charcoal px-3 py-2 text-sm font-medium text-white hover:bg-charcoal-light disabled:opacity-50"
                       >
@@ -502,6 +524,15 @@ export function IncidenceDetailModal({
                             Enviar
                           </>
                         )}
+                      </button>
+                      <button
+                        onClick={() => setShowCommentPhoto(true)}
+                        disabled={addingComment}
+                        className="flex items-center justify-center gap-1 rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                        title="Adjuntar foto"
+                      >
+                        <ImageIcon className="h-4 w-4" />
+                        <span className="hidden sm:inline">Foto</span>
                       </button>
                     </div>
                   </div>
@@ -579,9 +610,9 @@ export function IncidenceDetailModal({
                     {incidence.conformityImageUrls && incidence.conformityImageUrls.length > 0 && (
                       <div className="mt-2 grid grid-cols-3 gap-2">
                         {incidence.conformityImageUrls.map((url, idx) => (
-                          <a key={idx} href={url} target="_blank" rel="noopener noreferrer">
+                          <button key={idx} onClick={() => setLightboxSrc(url)} className="text-left">
                             <Image src={url} alt={`Evidencia ${idx + 1}`} width={200} height={80} className="h-20 w-full rounded-lg object-cover" />
-                          </a>
+                          </button>
                         ))}
                       </div>
                     )}
@@ -747,7 +778,26 @@ export function IncidenceDetailModal({
                           </span>
                         )}
                       </div>
-                      <p className="mt-1 text-sm text-gray-700">{c.text}</p>
+                      {c.text && <p className="mt-1 text-sm text-gray-700">{c.text}</p>}
+                      {c.imageUrl && (
+                        <div className="mt-2">
+                          <button
+                            onClick={() => c.imageUrl && setLightboxSrc(c.imageUrl)}
+                            className="group relative inline-block overflow-hidden rounded-lg border border-gray-200 text-left"
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={c.imageUrl}
+                              alt={c.imageCaption || 'Foto adjunta'}
+                              className="max-h-24 w-auto object-contain transition-transform group-hover:scale-105"
+                              loading="lazy"
+                            />
+                          </button>
+                          {c.imageCaption && (
+                            <p className="mt-1 text-xs italic text-gray-500">{c.imageCaption}</p>
+                          )}
+                        </div>
+                      )}
                     </li>
                   );
                 })}
@@ -860,6 +910,17 @@ export function IncidenceDetailModal({
         </div>
       )}
 
+      {/* Comment Photo Modal */}
+      <CommentPhotoDialog
+        open={showCommentPhoto}
+        onClose={() => setShowCommentPhoto(false)}
+        onConfirm={(file, caption) => {
+          handleSubmitComment(file, caption);
+          setShowCommentPhoto(false);
+        }}
+        isLoading={addingComment}
+      />
+
       {/* Nested Edit Modal */}
       {editing && isAdmin && (
         <EditIncidenceModal
@@ -874,6 +935,12 @@ export function IncidenceDetailModal({
           isLoading={isUpdating}
         />
       )}
+
+      <ImageLightbox
+        src={lightboxSrc ?? ''}
+        open={!!lightboxSrc}
+        onClose={() => setLightboxSrc(null)}
+      />
     </>
   );
 }
