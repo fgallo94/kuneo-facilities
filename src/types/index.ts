@@ -123,6 +123,8 @@ export interface IncidenceComment {
   authorId: string;
   authorName?: string;
   text: string;
+  imageUrl?: string;
+  imageCaption?: string;
   createdAt: Timestamp;
 }
 

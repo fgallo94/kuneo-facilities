@@ -70,6 +70,7 @@ describe('useAdminIncidenceStats', () => {
           title: 'C',
           status: 'Reparado',
           severity: 1,
+          conformityStatus: 'accepted',
           createdAt: { seconds: today.getTime() / 1000, nanoseconds: 0 },
         }),
       },
@@ -79,6 +80,26 @@ describe('useAdminIncidenceStats', () => {
           title: 'D',
           status: 'Presupuestado',
           severity: 1,
+          createdAt: { seconds: today.getTime() / 1000, nanoseconds: 0 },
+        }),
+      },
+      {
+        id: 'inc_5',
+        data: () => ({
+          title: 'E',
+          status: 'Reparado',
+          severity: 2,
+          conformityStatus: 'rejected',
+          createdAt: { seconds: today.getTime() / 1000, nanoseconds: 0 },
+        }),
+      },
+      {
+        id: 'inc_6',
+        data: () => ({
+          title: 'F',
+          status: 'A facturar',
+          severity: 2,
+          conformityStatus: 'accepted',
           createdAt: { seconds: today.getTime() / 1000, nanoseconds: 0 },
         }),
       },
@@ -93,15 +114,17 @@ describe('useAdminIncidenceStats', () => {
 
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    expect(result.current.stats.total).toBe(4);
+    expect(result.current.stats.total).toBe(6);
     expect(result.current.stats.pendingReview).toBe(1); // Reportada
     expect(result.current.stats.inProgress).toBe(1);
-    expect(result.current.stats.resolved).toBe(1);
+    expect(result.current.stats.resolved).toBe(3); // Reparado x2 + A facturar
+    expect(result.current.stats.accepted).toBe(2); // accepted x2
+    expect(result.current.stats.rejected).toBe(1); // rejected x1
 
     const todayIndex = 6;
     expect(result.current.chartData[todayIndex].urgent).toBe(1); // severity 5
     expect(result.current.chartData[todayIndex].high).toBe(1); // severity 3
-    expect(result.current.chartData[todayIndex].normal).toBe(2); // severity 1 + 1
+    expect(result.current.chartData[todayIndex].normal).toBe(4); // severity 1 + 1 + 2 + 2
   });
 
   it('maneja errores de firestore', async () => {

@@ -23,6 +23,8 @@ export interface DailyTrend {
 export interface AdminStats {
   total: number;
   pendingReview: number;
+  accepted: number;
+  rejected: number;
   inProgress: number;
   resolved: number;
 }
@@ -96,6 +98,8 @@ export function useAdminIncidenceStats(options?: UseAdminIncidenceStatsOptions):
     const stats: AdminStats = {
       total: incidences.length,
       pendingReview: 0,
+      accepted: 0,
+      rejected: 0,
       inProgress: 0,
       resolved: 0,
     };
@@ -112,6 +116,12 @@ export function useAdminIncidenceStats(options?: UseAdminIncidenceStatsOptions):
         stats.inProgress += 1;
       } else if (inc.status === 'Reparado' || inc.status === 'A facturar') {
         stats.resolved += 1;
+      }
+
+      if (inc.conformityStatus === 'accepted') {
+        stats.accepted += 1;
+      } else if (inc.conformityStatus === 'rejected') {
+        stats.rejected += 1;
       }
 
       // Chart data (last 7 days)

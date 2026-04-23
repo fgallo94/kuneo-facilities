@@ -10,7 +10,7 @@ import { useRecentIncidences } from '@/features/dashboard/hooks/useRecentInciden
 import { useProperties } from '@/features/incidences/hooks/useProperties';
 import { IncidentTrendsChart } from '@/features/dashboard/components/IncidentTrendsChart';
 import { RecentIncidentsList } from '@/features/dashboard/components/RecentIncidentsList';
-import { FileText, Clock, CheckCircle2, Loader2 } from 'lucide-react';
+import { FileText, Clock, CheckCircle2, Loader2, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { useIncidenceDetailContext } from '@/features/incidences/context/IncidenceDetailContext';
 
 export default function DashboardPage() {
@@ -64,6 +64,20 @@ export default function DashboardPage() {
           bg: 'bg-amber-50',
         },
         {
+          label: 'Aceptadas',
+          value: stats.accepted,
+          icon: ThumbsUp,
+          color: 'text-emerald-700',
+          bg: 'bg-emerald-50',
+        },
+        {
+          label: 'Rechazadas',
+          value: stats.rejected,
+          icon: ThumbsDown,
+          color: 'text-red-700',
+          bg: 'bg-red-50',
+        },
+        {
           label: 'En progreso',
           value: stats.inProgress,
           icon: Loader2,
@@ -97,7 +111,7 @@ export default function DashboardPage() {
         {isAdmin && (
           <>
             {/* KPI Cards */}
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-6">
               {kpiCards.map((card) => (
                 <div
                   key={card.label}

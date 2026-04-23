@@ -133,8 +133,12 @@ service cloud.firestore {
         allow create: if isAuthenticated()
           && request.resource.data.keys().hasAll(['authorId', 'text', 'createdAt'])
           && request.resource.data.authorId == request.auth.uid
-          && request.resource.data.text is string && request.resource.data.text.size() > 0
-          && request.resource.data.createdAt is timestamp;
+          && request.resource.data.text is string
+          && request.resource.data.createdAt is timestamp
+          && (
+            request.resource.data.text.size() > 0
+            || (request.resource.data.keys().hasAny(['imageUrl']) && request.resource.data.imageUrl is string)
+          );
         allow update, delete: if false;
       }
     }

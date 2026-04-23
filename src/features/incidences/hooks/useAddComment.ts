@@ -2,19 +2,26 @@
 
 import { useState } from 'react';
 import { collection, doc, serverTimestamp, setDoc } from 'firebase/firestore';
-import { getClientAuth, getClientFirestore } from '@/lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { getClientAuth, getClientFirestore, getClientStorage } from '@/lib/firebase';
 
 export function useAddComment() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const addComment = async (incidenceId: string, text: string) => {
+  const addComment = async (
+    incidenceId: string,
+    text: string,
+    imageFile?: File,
+    imageCaption?: string
+  ) => {
     setIsLoading(true);
     setError(null);
 
     try {
       const auth = getClientAuth();
       const db = getClientFirestore();
+      const storage = getClientStorage();
       const user = auth.currentUser;
 
       if (!user) {
@@ -22,30 +29,47 @@ export function useAddComment() {
       }
 
       const trimmed = text.trim();
-      if (!trimmed) {
+      const captionTrimmed = imageCaption?.trim();
+
+      if (!trimmed && !imageFile) {
         throw new Error('El comentario no puede estar vacío');
       }
 
       const authorName = user.displayName || user.email || 'Usuario';
+
+      let imageUrl: string | undefined;
+      if (imageFile) {
+        const commentRef = doc(collection(db, 'incidences', incidenceId, 'comments'));
+        const path = `incidences/${incidenceId}/${user.uid}/comments/${commentRef.id}/${imageFile.name}`;
+        const storageRef = ref(storage, path);
+        await uploadBytes(storageRef, imageFile);
+        imageUrl = await getDownloadURL(storageRef);
+      }
 
       // 1. Write comment
       const commentRef = doc(collection(db, 'incidences', incidenceId, 'comments'));
       await setDoc(commentRef, {
         authorId: user.uid,
         authorName,
-        text: trimmed,
+        text: trimmed || '',
+        ...(imageUrl && { imageUrl }),
+        ...(captionTrimmed && { imageCaption: captionTrimmed }),
         createdAt: serverTimestamp(),
       });
 
       // 2. Write history entry
       const historyRef = doc(collection(db, 'incidences', incidenceId, 'history'));
-      await setDoc(historyRef, {
+      const historyPayload: Record<string, unknown> = {
         changedBy: user.uid,
         changedByName: authorName,
         changeType: 'comment',
-        comment: trimmed,
+        comment: trimmed || '',
         timestamp: serverTimestamp(),
-      });
+      };
+      if (imageUrl) {
+        historyPayload.hasImage = true;
+      }
+      await setDoc(historyRef, historyPayload);
     } catch (err) {
       let msg = 'Error inesperado al enviar el comentario';
       if (err instanceof Error) {
